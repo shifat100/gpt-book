@@ -1,14 +1,14 @@
 [
   {
-    "id": "inro",
-    "title": "Introduction",
-    "folder": "books/intro",
+    "id": "app_docs_en",
+    "title": "App Documentation & Guide",
+    "folder": "docs_en",
     "chapters": [
-      {
-        "id": "readme",
-        "title": "Developer Notes",
-        "file": "readme.md"
-      }
+      { "id": "c1", "title": "Developer Introduction", "file": "intro.md" },
+      { "id": "c2", "title": "Tech Stack & Architecture", "file": "tech_stack.md" },
+      { "id": "c3", "title": "AI Content Notice", "file": "ai_disclaimer.md" },
+      { "id": "c4", "title": "Terms of Agreement", "file": "terms.md" },
+      { "id": "c5", "title": "Frequently Asked Questions", "file": "faq.md" }
     ]
   },
   {

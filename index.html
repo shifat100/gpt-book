@@ -123,10 +123,13 @@
        table { font-size:0.5em; }
         tr:nth-child(even) {background:#dfdfdf;}
         pre {
-            word-warp: break-word;
-            word-break: keep-all;
-            width:100%;
-        }
+    white-space: pre-wrap;       
+    white-space: -moz-pre-wrap; 
+    white-space: -o-pre-wrap;    
+    word-wrap: break-word;       
+    overflow-wrap: break-word;   
+    width: 100%;
+                 }
     </style>
 </head>
 <body>

@@ -160,7 +160,7 @@
 
             // --- Initial Load & History Listener ---
             useEffect(() => {
-                fetch('books.json')
+                fetch('books/db.json')
                     .then(res => res.json())
                     .then(data => { 
                         setBooks(data); 

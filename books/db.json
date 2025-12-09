@@ -1,13 +1,13 @@
 [
   {
-    "id": "programming",
-    "title": "Programming Notes",
-    "folder": "books/programming",
+    "id": "inro",
+    "title": "Introduction",
+    "folder": "books/intro",
     "chapters": [
       {
-        "id": "vars",
-        "title": "Variables & Types",
-        "file": "variables.md"
+        "id": "readme",
+        "title": "Developer Notes",
+        "file": "readme.md"
       }
     ]
   },

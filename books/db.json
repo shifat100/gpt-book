@@ -2,7 +2,7 @@
   {
     "id": "app_docs_en",
     "title": "App Documentation & Guide",
-    "folder": "docs_en",
+    "folder": "books/docs_en",
     "chapters": [
       { "id": "c1", "title": "Developer Introduction", "file": "intro.md" },
       { "id": "c2", "title": "Tech Stack & Architecture", "file": "tech_stack.md" },

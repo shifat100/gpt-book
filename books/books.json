@@ -1,0 +1,71 @@
+[
+  {
+    "id": "programming",
+    "title": "Programming Notes",
+    "folder": "books/programming",
+    "chapters": [
+      {
+        "id": "vars",
+        "title": "Variables & Types",
+        "file": "variables.md"
+      }
+    ]
+  },
+  {
+    "id": "ob",
+    "title": "Organizational Behavior",
+    "folder": "books/ob",
+    "chapters": [
+      {
+        "id": "ch1",
+        "title": "Introduction and overview",
+        "file": "Introduction+and+overview.md"
+      },
+      {
+        "id": "ch2",
+        "title": "Causation in behavior",
+        "file": "Causation%20in%20behavior.md"
+      },
+      {
+        "id": "ch3",
+        "title": "Conflict in organization",
+        "file": "Conflicts in organization.md"
+      },
+      {
+        "id": "ch4",
+        "title": "General principles of personnel Testing",
+        "file": "General principles of personnel Testing.md"
+      },
+      {
+        "id": "ch5",
+        "title": "Attitudes and Job satisfaction",
+        "file": "Attitudes and Job satisfaction.md"
+      },
+      {
+        "id": "ch6",
+        "title": "Frustration",
+        "file": "Frustration.md"
+      },
+      {
+        "id": "ch7",
+        "title": "Motivational theories",
+        "file": "Motivational theories.md"
+      },
+      {
+        "id": "ch8",
+        "title": "Leadership in organization",
+        "file": "Leadership in organization.md"
+      },
+      {
+        "id": "ch9",
+        "title": "Management development and training",
+        "file": "Management development and training.md"
+      },
+      {
+        "id": "ch10",
+        "title": "Questions",
+        "file": "questions.md"
+      }
+    ]
+  }
+]

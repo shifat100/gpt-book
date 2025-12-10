@@ -67,5 +67,47 @@
         "file": "questions.md"
       }
     ]
+  },
+  {
+  "id": "legal_env_business",
+  "title": "Legal Environment of Business",
+  "folder": "books/leob",
+  "chapters": [
+    {
+      "id": "contract_act_1872",
+      "title": "The Contract Act, 1872",
+      "file": "The Contract Act, 1872.md"
+    },
+    {
+      "id": "negotiable_instruments_1881",
+      "title": "The Negotiable Instruments Act, 1881",
+      "file": "The Negotiable Instruments Act, 1881.md"
+    },
+    {
+      "id": "sale_of_goods_1930",
+      "title": "The Sale of Goods Act, 1930",
+      "file": "The Sale of Goods Act, 1930.md"
+    },
+    {
+      "id": "company_act_1994",
+      "title": "The Company Act, 1994",
+      "file": "The Company Act, 1994.md"
+    },
+    {
+      "id": "partnership_act_1932",
+      "title": "The Partnership Act, 1932",
+      "file": "The Partnership Act, 1932.md"
+    },
+    {
+      "id": "labor_act_2006",
+      "title": "The Bangladesh Labor Act, 2006",
+      "file": "The Bangladesh Labor Act, 2006.md"
+    },
+        {
+      "id": "conclution",
+      "title": "Conclution",
+      "file": "Conclusion.md"
+    }
+  ]
   }
 ]

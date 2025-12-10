@@ -119,6 +119,4 @@ In a contract of sale, certain **implied conditions and warranties** automatical
 * **Warranty of Freedom from Encumbrances**: Goods are free from charges.
 * **Warranty as to Quality**: If defect is not apparent and known to seller.
 
----
 
-# **End of Chapter 3**

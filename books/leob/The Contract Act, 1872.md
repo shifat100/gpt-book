@@ -213,6 +213,3 @@ Contract ends if:
 * Pawnee may retain goods until payment.
 * Pawnor may redeem after payment.
 
----
-
-# **End of Chapter 1**

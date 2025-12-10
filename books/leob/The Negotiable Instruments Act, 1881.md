@@ -151,7 +151,3 @@ Dishonor occurs when the instrument is not accepted or not paid.
 * Holder may file a **suit for recovery**.
 * In case of cheques:
   Dishonor for insufficiency of funds is an offence under the **Negotiable Instruments (Amendment) Act**, with penalties.
-
----
-
-# **End of Chapter 2**

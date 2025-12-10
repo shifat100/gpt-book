@@ -246,7 +246,3 @@ Occurs when:
 * Appointed by the court.
 * Takes control of company assets.
 * Settles liabilities and distributes remaining assets.
-
----
-
-# **End of Chapter 4**

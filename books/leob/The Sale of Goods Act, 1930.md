@@ -746,4 +746,386 @@ The unpaid seller has a **lien** (right to retain possession) over the goods unt
 
 **2. Right of Stoppage in Transit (Section 50)**
 
-If the buyer becomes insolvent, the unpaid seller can stop the goods while they
+If the buyer becomes insolvent, the unpaid seller can stop the goods while দেয় are in transit (being transported) and resume possession.
+
+**Conditions:**
+- Buyer must be insolvent
+- Goods must be in transit
+- Seller has not been paid
+
+**When Transit Ends:**
+- Buyer or their agent takes delivery
+- Carrier acknowledges to buyer that goods are held on buyer's behalf
+- Goods reach destination and carrier intimates buyer
+
+**How to Exercise:**
+- Give notice to carrier or person in possession
+- Carrier must redeliver goods to seller
+
+**3. Right of Resale (Section 54)**
+
+The unpaid seller may resell the goods in the following circumstances:
+
+**(a) Perishable Goods**
+- When goods are perishable and buyer doesn't pay
+
+**(b) Notice of Resale**
+- Seller gives notice of intention to resell and buyer doesn't pay within reasonable time
+
+**(c) Express Reservation**
+- If seller expressly reserved the right to resell in case of default
+
+**Effect of Resale:**
+- Original contract is rescinded
+- Buyer is liable for any loss
+- Seller need not account for any profit
+
+**B. Rights Against the Buyer (Section 55)**
+
+**1. Suit for Price (Section 55(1))**
+
+Where property has passed and buyer wrongfully neglects or refuses to pay, seller can sue for the price.
+
+**2. Suit for Damages for Non-Acceptance (Section 56)**
+
+Where buyer wrongfully neglects or refuses to accept and pay, seller can sue for damages for non-acceptance.
+
+**Measure of Damages:**
+- Prima facie: Difference between contract price and market price on the date of breach
+- If no available market: Reasonable compensation considering all circumstances
+
+**3. Suit for Anticipatory Breach**
+
+If buyer repudiates contract before date of delivery, seller can sue immediately.
+
+---
+
+## 5. Conditions and Warranties
+
+In every contract of sale, there are certain **stipulations** (terms) that define the quality, quantity, and nature of goods. These stipulations may be **conditions** or **warranties**.
+
+### 5.1 Conditions
+
+#### Definition (Section 12(2))
+
+"A condition is a stipulation essential to the main purpose of the contract, the breach of which gives rise to a right to treat the contract as repudiated."
+
+**Characteristics:**
+- Essential to the contract
+- Goes to the root of the contract
+- Breach gives right to:
+  - Reject the goods, AND
+  - Treat the contract as repudiated, AND
+  - Claim damages
+
+**Example**: A buys a car described as "2023 model." It turns out to be 2020 model. This is a breach of condition. A can reject the car and get refund.
+
+### 5.2 Warranties
+
+#### Definition (Section 12(3))
+
+"A warranty is a stipulation collateral to the main purpose of the contract, the breach of which gives rise to a claim for damages but not to a right to reject the goods and treat the contract as repudiated."
+
+**Characteristics:**
+- Subsidiary to main purpose
+- Collateral to the contract
+- Breach gives right to:
+  - Claim damages only
+  - Cannot reject goods
+
+**Example**: A buys a car with a warranty that spare parts are easily available. This turns out to be false. A cannot reject the car but can claim damages.
+
+### 5.3 Distinction Between Condition and Warranty
+
+| **Aspect** | **Condition** | **Warranty** |
+|------------|--------------|--------------|
+| **Importance** | Essential to contract | Subsidiary to contract |
+| **Effect of Breach** | Contract can be repudiated | Only damages can be claimed |
+| **Right to Reject** | Buyer can reject goods | Buyer cannot reject goods |
+| **Right to Damages** | Yes | Yes |
+| **Nature** | Goes to root of contract | Collateral to main purpose |
+
+### 5.4 When Condition Becomes Warranty (Section 13)
+
+A breach of condition may be treated as a breach of warranty in the following cases:
+
+**1. Voluntary Waiver by Buyer**
+- Buyer may elect to treat breach of condition as breach of warranty
+
+**2. Acceptance of Goods**
+- When buyer has accepted goods or part of them
+- After acceptance, breach of condition can only be treated as breach of warranty
+- Exception: If the condition was not apparent on reasonable examination
+
+**3. Satisfaction of Condition Not Possible**
+- When fulfillment of condition is excused by law or fact
+
+### 5.5 Implied Conditions and Warranties
+
+While parties may expressly agree on conditions and warranties, the Sale of Goods Act also provides for certain **implied** conditions and warranties that automatically apply unless excluded by the parties.
+
+#### Implied Conditions (Section 14-17)
+
+**1. Condition as to Title (Section 14(a))**
+
+**"There is an implied condition on the part of the seller that, in the case of a sale, he has a right to sell the goods, and that, in the case of an agreement to sell, he will have a right to sell the goods at the time when the property is to pass."**
+
+**Meaning:**
+- Seller impliedly warrants that they have the right to sell
+- Seller must have ownership or authority to sell
+
+**Breach:**
+- If seller has no right to sell, it is a breach of condition
+- Buyer can reject goods and get full refund
+- Even if buyer has used the goods, full refund is available
+
+**Example**: A buys a stolen car from B. Later, the true owner recovers the car from A. A can get full refund from B plus damages, even if A has used the car.
+
+**Landmark Case**: *Rowland v. Divall* - Buyer who had used car for months was entitled to full refund when it was discovered the seller had no title.
+
+**2. Sale by Description (Section 15)**
+
+**"Where there is a contract for the sale of goods by description, there is an implied condition that the goods shall correspond with the description."**
+
+**When Applies:**
+- When buyer has not seen the goods and relies on description
+- Also applies when buyer has seen goods if they are sold by description
+
+**Breach:**
+- If goods do not match description, it is breach of condition
+- Buyer can reject
+
+**Example**: A orders "100% cotton shirts." If shirts contain polyester, this is breach of condition.
+
+**Important**: The goods must match the description in all material respects, not just substantially.
+
+**3. Sale by Sample (Section 17)**
+
+**"In the case of a contract for sale by sample, there is an implied condition:**
+**(a) that the bulk shall correspond with the sample in quality;**
+**(b) that the buyer shall have a reasonable opportunity of comparing the bulk with the sample;**
+**(c) that the goods shall be free from any defect, rendering them unmerchantable, which would not be apparent on reasonable examination of the sample."**
+
+**When Applies:**
+- When goods are sold by sample (a specimen is shown)
+
+**Example**: A shows a sample of fabric to B. B orders 1000 meters. The bulk delivered must match the sample in quality.
+
+**4. Condition as to Quality or Fitness (Section 16)**
+
+**General Rule**: "There is no implied condition or warranty as to the quality or fitness for any particular purpose of goods supplied under a contract of sale."
+
+**Principle**: **Caveat Emptor** (Let the buyer beware)
+- Buyer must examine goods and satisfy themselves
+- Seller not responsible for defects that buyer should have discovered
+
+**Exceptions (Implied Condition of Fitness):**
+
+**(a) Fitness for Buyer's Purpose (Section 16(1))**
+
+**"Where the buyer, expressly or by implication, makes known to the seller the particular purpose for which the goods are required, so as to show that the buyer relies on the seller's skill or judgment, and the goods are of a description which it is in the course of the seller's business to supply (whether he is the manufacturer or producer or not), there is an implied condition that the goods shall be reasonably fit for such purpose."**
+
+**Conditions:**
+- Buyer makes known the particular purpose
+- Buyer relies on seller's skill and judgment
+- Seller deals in such goods
+
+**Example**: A tells a chemist that they need medicine for headache. The chemist recommends a medicine. There is an implied condition that the medicine will be fit for curing headache.
+
+**Exception to Exception**: If goods are sold under a patent or trade name, no implied condition of fitness.
+
+**(b) Merchantable Quality (Section 16(2))**
+
+**"Where goods are bought by description from a seller who deals in goods of that description (whether he is the manufacturer or producer or not), there is an implied condition that the goods shall be of merchantable quality."**
+
+**Merchantable Quality** means goods are of such quality and in such condition that a reasonable person, knowing the facts, would accept them in performance of the contract.
+
+**Conditions:**
+- Goods bought by description
+- From a dealer in such goods
+
+**Example**: A buys a mobile phone from a mobile shop. There is an implied condition that the phone will be of merchantable quality (i.e., will work properly).
+
+**Exception**: No implied condition as to quality if:
+- Defects are pointed out to buyer before contract
+- Buyer has examined goods and defects should have been revealed
+- Goods are sold under patent or trade name (regarding fitness)
+
+#### Implied Warranties (Section 14(b), 14(c))
+
+**1. Warranty of Quiet Possession (Section 14(b))**
+
+**"There is an implied warranty that the buyer shall have and enjoy quiet possession of the goods."**
+
+**Meaning:**
+- Buyer will not be disturbed in possession by anyone with superior title
+
+**Example**: A buys goods from B. Later C claims ownership and takes the goods from A. This is breach of warranty of quiet possession. A can claim damages from B.
+
+**2. Warranty of Freedom from Encumbrances (Section 14(c))**
+
+**"There is an implied warranty that the goods shall be free from any charge or encumbrance in favor of any third party not declared or known to the buyer before or at the time when the contract is made."**
+
+**Meaning:**
+- Goods are free from any hidden charges, liens, or mortgages
+
+**Example**: A buys a car from B. Later, it is discovered that the car was mortgaged to a bank. This is breach of warranty. A can claim damages.
+
+### 5.6 Exclusion of Implied Terms
+
+**Section 16(4)**: "An express warranty or condition does not negative a warranty or condition implied by this Act unless inconsistent therewith."
+
+**Meaning:**
+- Parties can exclude or modify implied conditions and warranties by express agreement
+- However, express terms do not automatically exclude implied terms
+- They exclude only if inconsistent
+
+**Example**: If the contract expressly states "sold as is" or "no warranties," implied conditions may be excluded.
+
+**Important**: In consumer sales, many jurisdictions do not allow exclusion of certain implied conditions (like merchantable quality) to protect consumers. Bangladesh has consumer protection laws that may override contractual exclusions.
+
+### 5.7 Doctrine of Caveat Emptor (Let the Buyer Beware)
+
+**Section 16** embodies the principle of **Caveat Emptor**, meaning "let the buyer beware."
+
+**Principle:**
+- Buyer must examine goods before purchase
+- Buyer takes risk of defects that could be discovered on examination
+- No implied warranty of quality (except in specific circumstances)
+
+**Rationale:**
+- Encourages buyers to be diligent
+- Seller cannot know every purpose buyer might have
+- Commercial practicality
+
+**Limitations (When Caveat Emptor Does NOT Apply):**
+
+1. **Fraud by Seller**
+- If seller actively conceals defects or misrepresents
+
+2. **Fitness for Purpose**
+- When buyer relies on seller's skill and judgment
+
+3. **Merchantable Quality**
+- When goods are bought by description from a dealer
+
+4. **Sale by Sample**
+- Bulk must match sample
+
+5. **Sale by Description**
+- Goods must match description
+
+6. **Usage of Trade**
+- Implied terms from trade custom
+
+**Example of Caveat Emptor**: A buys a second-hand car after inspecting it. Later, A discovers minor defects that would have been apparent on careful inspection. A cannot claim these were breach of condition.
+
+**Example Where Caveat Emptor Doesn't Apply**: A tells car dealer they need a car for long-distance travel. Dealer recommends a specific car. If car breaks down frequently on long trips, this is breach of implied condition of fitness for purpose.
+
+---
+
+## Conclusion
+
+The **Sale of Goods Act, 1930** is a fundamental statute governing one of the most common commercial transactions—the sale of goods. Its provisions strike a balance between the interests of buyers and sellers, providing clarity and predictability in commercial dealings.
+
+**Key Takeaways:**
+
+1. **Clear Definitions**: The Act provides precise definitions of goods, sale, buyer, seller, and other key terms that form the foundation of commercial transactions.
+
+2. **Sale vs. Agreement to Sell**: Understanding when property (ownership) transfers is crucial for determining risk, rights, and remedies. The distinction between sale (immediate transfer) and agreement to sell (future transfer) has significant legal and practical implications.
+
+3. **Transfer of Property**: The Act provides detailed rules for determining when property passes from seller to buyer, based on the intention of parties and the nature of goods. These rules determine who bears the risk and who can sue third parties.
+
+4. **Delivery and Performance**: The Act establishes clear rules for delivery, including quantity, quality, time, and place. These rules ensure both parties understand their obligations and rights.
+
+5. **Implied Terms**: The implied conditions and warranties protect buyers by ensuring minimum standards of quality, fitness, and title. These terms apply automatically unless excluded by agreement.
+
+6. **Caveat Emptor with Protections**: While the Act follows the principle of "let the buyer beware," it provides important exceptions that protect buyers who rely on sellers' expertise or who purchase goods by description or sample.
+
+7. **Rights of Unpaid Seller**: The Act protects sellers who have not been paid by granting them rights of lien, stoppage in transit, and resale—balancing the interests of both parties.
+
+**Practical Importance:**
+
+For business students and future managers, understanding the Sale of Goods Act is essential because:
+- Most business transactions involve the sale of goods
+- The Act defines the rights and obligations in these transactions
+- Knowledge of the Act helps in drafting better contracts
+- Understanding implied conditions helps in quality management
+- Knowledge of remedies helps in dispute resolution
+- The Act forms the basis for international sale contracts (with modifications)
+
+In an era of e-commerce, global supply chains, and complex commercial transactions, the principles established in the Sale of Goods Act, 1930 remain foundational. While modern commercial law has evolved with specialized regulations for consumer protection, electronic transactions, and international trade, the core principles of this Act continue to govern the sale of goods in Bangladesh.
+
+In the next chapter, we will explore the **Partnership Act, 1932**, which governs one of the most common forms of business organization, particularly suitable for small and medium enterprises.
+
+---
+
+**Key Terms to Remember:**
+
+- **Sale**: Immediate transfer of property for price
+- **Agreement to Sell**: Future transfer of property
+- **Goods**: Movable property (excluding money and actionable claims)
+- **Specific Goods**: Identified and agreed upon goods
+- **Ascertained Goods**: Identified after contract
+- **Unascertained Goods**: Defined only by description
+- **Deliverable State**: State in which buyer must take delivery
+- **Appropriation**: Setting apart specific goods for the contract
+- **Condition**: Essential stipulation; breach allows rejection
+- **Warranty**: Collateral stipulation; breach gives only damages
+- **Merchantable Quality**: Goods suitable for the purpose they are normally used
+- **Caveat Emptor**: Let the buyer beware
+- **Unpaid Seller**: Seller who has not received full payment
+
+---
+
+**Review Questions:**
+
+1. Distinguish between a sale and an agreement to sell. Why is this distinction important?
+2. What is meant by "property in goods"? When does property pass from seller to buyer?
+3. Explain the five rules for transfer of property in goods with examples.
+4. What is the general rule regarding transfer of title? What are the exceptions?
+5. Distinguish between conditions and warranties. When does a condition become a warranty?
+6. Explain the doctrine of Caveat Emptor and its exceptions.
+7. What are the implied conditions in a contract of sale?
+8. Explain the rights of an unpaid seller against the goods.
+9. What are the rules regarding delivery of wrong quantity?
+10. When is a buyer deemed to have accepted the goods?
+
+---
+
+**Case Studies for Discussion:**
+
+**Case Study 1: Transfer of Property**
+
+A agrees to sell 100 bags of rice to B from A's warehouse. The rice needs to be weighed to determine the exact price at Tk. 50 per kg. Before weighing, the warehouse catches fire and all rice is destroyed. Who bears the loss?
+
+**Case Study 2: Implied Conditions**
+
+A goes to a shoe shop and asks for "formal leather shoes for office wear, size 42." The shopkeeper shows several options. A selects one pair without trying it on. After wearing for two days, the shoes cause severe blisters. Can A return the shoes?
+
+**Case Study 3: Sale by Non-Owner**
+
+A steals B's laptop and sells it to C, who purchases in good faith thinking A is the owner. Later, B discovers his laptop with C. Can B recover the laptop from C? Would your answer differ if C bought the laptop from A who had obtained it from B through fraud but before B rescinded the contract?
+
+**Case Study 4: Unpaid Seller's Rights**
+
+A in Dhaka sells goods to B in Chittagong on credit for 30 days. The goods are dispatched by truck. After 15 days, A learns that B has become insolvent. What rights does A have?
+
+---
+
+**Practical Exercise:**
+
+**Draft a contract for the sale of the following goods, incorporating appropriate conditions and warranties:**
+
+1. 500 metric tons of rice (Grade A) at Tk. 45 per kg, to be delivered in two installments
+2. A specific second-hand car (registration number DM-1234) for Tk. 800,000, to be delivered after minor repairs
+3. 100 smartphones (Model XYZ) to be supplied on "sale or return" basis for 15 days
+
+**Consider and include:**
+- Identification of parties
+- Description of goods
+- Price and payment terms
+- Delivery terms (time, place, manner)
+- Express conditions and warranties
+- Transfer of property provisions
+- Remedies for breach

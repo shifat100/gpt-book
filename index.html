@@ -257,7 +257,8 @@ body.theme-black table tr:hover {
             }, [books]);
 
             useEffect(() => { document.body.className = `theme-${theme}`; }, [theme]);
-
+document.getElementById('theme-color').content = `${theme}`; }, [theme]);
+        
             // --- History & Routing Logic (The Core Fix) ---
             const handleRouting = (data) => {
                 if (!data || !data.length) return;

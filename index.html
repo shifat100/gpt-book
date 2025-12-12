@@ -256,8 +256,12 @@ body.theme-black table tr:hover {
                 return () => window.removeEventListener('popstate', listener);
             }, [books]);
 
-            useEffect(() => { document.body.className = `theme-${theme}`; }, [theme]);
-document.getElementById('theme-color').content = `${theme}`; }, [theme]);
+            useEffect(() => {
+  document.body.className = `theme-${theme}`;
+
+  const meta = document.getElementById("theme-color");
+  if (meta) meta.setAttribute("content", theme);
+}, [theme]);
         
             // --- History & Routing Logic (The Core Fix) ---
             const handleRouting = (data) => {

@@ -10,7 +10,48 @@
       { "id": "c4", "title": "Terms of Agreement", "file": "terms.md" },
       { "id": "c5", "title": "Frequently Asked Questions", "file": "faq.md" }
     ]
-  },
+  }, {
+  "id": "rm",
+  "title": "Risk Management and Insurance",
+  "folder": "books/rm",
+  "chapters": [
+    {
+      "id": "ch1",
+      "title": "Introduction to Insurance",
+      "file": "1.md"
+    },
+    {
+      "id": "ch2",
+      "title": "Life Assurance",
+      "file": "2.md"
+    },
+    {
+      "id": "ch3",
+      "title": "Marine Insurance",
+      "file": "3.md"
+    },
+    {
+      "id": "ch4",
+      "title": "Fire Insurance",
+      "file": "4.md"
+    },
+    {
+      "id": "ch5",
+      "title": "Risk Management",
+      "file": "5.md"
+    },
+    {
+      "id": "ch6",
+      "title": "Insurance Business in Bangladesh",
+      "file": "6.md"
+    },
+    {
+      "id": "ch7",
+      "title": "Marketing of Insurance Products",
+      "file": "7.md"
+    }
+  ]
+},
   {
     "id": "ob",
     "title": "Organizational Behavior",

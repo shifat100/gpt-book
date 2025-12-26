@@ -10,7 +10,48 @@
       { "id": "c4", "title": "Terms of Agreement", "file": "terms.md" },
       { "id": "c5", "title": "Frequently Asked Questions", "file": "faq.md" }
     ]
-  }, {
+  },  
+  {
+    "id": "bs2",
+    "title": "Business Statistics-II",
+    "folder": "books/bs2",
+    "chapters": [{
+      "id": "ch1",
+      "title": "Test of Hypothesis",
+      "file": "1.md"
+    },
+      {
+        "id": "ch2",
+        "title": "Chi-Square Test",
+        "file": "2.md"
+      },
+      {
+        "id": "ch3",
+        "title": "Correlation Analysis",
+        "file": "3.md"
+      },
+      {
+        "id": "ch4",
+        "title": "Regression Analysis",
+        "file": "4.md"
+      },
+      {
+        "id": "ch5",
+        "title": "Forecasting and Time Series Analysis",
+        "file": "5.md"
+      },
+      {
+        "id": "ch6",
+        "title": "Analysis of Variance",
+        "file": "6.md"
+      },
+      {
+        "id": "ch7",
+        "title": "Index Number",
+        "file": "7.md"
+      }]
+  },
+  {
   "id": "rm",
   "title": "Risk Management and Insurance",
   "folder": "books/rm",

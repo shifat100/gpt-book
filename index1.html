@@ -6,15 +6,18 @@
     <title>GPT E-Book Library</title>
     <meta name="theme-color" id="theme-color" content="#4285f4" />
 
+    <!-- KaTeX CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/contrib/auto-render.min.js"></script>
-
+    
     <!-- React Libraries -->
     <script crossorigin src="react.development.js"></script>
     <script crossorigin src="react-dom.development.js"></script>
     <script src="babel.min.js"></script>
     <script src="marked.min.js"></script>
+
+    <!-- KaTeX JS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/contrib/auto-render.min.js"></script>
 
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@400;700&display=swap" rel="stylesheet">
@@ -33,11 +36,12 @@
             --highlight: #ffeeba;       
             --shadow: 0 5px 20px rgba(0,0,0,0.15);
             --safe-bottom: 80px; 
+            --sidebar-width: 280px;
         }
 
         /* থিমস */
-        body.theme-white { --bg-body: #f0f2f5; --bg-paper: #ffffff; --text-main: #2c2c2c; --border-color: #333; }
-        body.theme-sepia { --bg-body: #f4ecd8; --bg-paper: #fdf6e3; --text-main: #5b4636; --border-color: #8b7355; --accent: #a0522d; --highlight: #ffdfba; }
+        body.theme-white { --bg-body: #f0f2f5; --bg-paper: #ffffff; --text-main: #2c2c2c; --border-color: #ddd; }
+        body.theme-sepia { --bg-body: #f4ecd8; --bg-paper: #fdf6e3; --text-main: #5b4636; --border-color: #d3c0a5; --accent: #a0522d; --highlight: #ffdfba; }
         body.theme-black { --bg-body: #121212; --bg-paper: #1e1e1e; --text-main: #d1d1d1; --border-color: #444; --accent: #ff6b6b; --shadow: 0 5px 20px rgba(0,0,0,0.5); --highlight: #4a4a4a; }
 
         html { width: 100%; height: 100%; }
@@ -49,7 +53,32 @@
         }
 
         .app-container { display: flex; flex-direction: column; width: 100%; height: 100vh; height: 100dvh; background-color: var(--bg-body); }
-        .reader-area { flex: 1; overflow-y: auto; padding: 20px; scroll-behavior: smooth; display: flex; justify-content: center; background-color: var(--bg-body); }
+        
+        /* Layout for Sidebar + Reader */
+        .reader-wrapper { display: flex; flex: 1; overflow: hidden; position: relative; width: 100%; max-width: 1400px; margin: 0 auto; }
+        
+        /* --- Sidebar (New Feature) --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-paper);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            display: none; /* Hidden by default on mobile */
+            flex-direction: column;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border-color); font-weight: bold; font-family: 'Lato', sans-serif; color: var(--accent); }
+        .sidebar-item { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 15px; transition: 0.2s; }
+        .sidebar-item:hover { background: rgba(0,0,0,0.05); }
+        .sidebar-item.active { background: var(--accent); color: #fff; }
+
+        @media (min-width: 992px) {
+            .sidebar { display: flex; } /* Show on Desktop */
+        }
+
+        .reader-area { flex: 1; overflow-y: auto; padding: 20px; scroll-behavior: smooth; display: flex; justify-content: center; background-color: var(--bg-body); position: relative; }
 
         /* --- বইয়ের পাতা --- */
         .book-sheet {
@@ -64,17 +93,44 @@
             .book-sheet { max-width: 100%; padding: 30px 20px; padding-bottom: 120px; box-shadow: none; margin-bottom: 0; border-radius: 0; }
         }
 
+        /* --- FLIPBOOK STYLES (New Feature) --- */
+        .flip-container {
+            width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;
+            perspective: 1500px; overflow: hidden; padding: 10px;
+        }
+        .flip-page {
+            width: 100%; max-width: 750px; height: 95%; background: var(--bg-paper);
+            box-shadow: var(--shadow); border-radius: 5px; overflow-y: auto;
+            padding: 50px; position: relative; border-left: 5px solid rgba(0,0,0,0.1);
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .flip-toc-item { padding: 15px; border-bottom: 1px dashed var(--border-color); cursor: pointer; font-size: 18px; }
+        .flip-toc-item:hover { background: rgba(0,0,0,0.05); color: var(--accent); }
+        
+        .page-number { position: absolute; bottom: 15px; right: 20px; font-size: 12px; opacity: 0.5; }
+        .flip-nav-overlay {
+            position: absolute; top: 0; bottom: 0; width: 15%; z-index: 50; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.2s;
+        }
+        .flip-nav-overlay:hover { opacity: 1; background: rgba(0,0,0,0.02); }
+        .flip-nav-prev { left: 0; }
+        .flip-nav-next { right: 0; }
+        .nav-arrow { font-size: 40px; color: var(--text-main); background: var(--bg-paper); border-radius: 50%; padding: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+
+        /* Existing Styles */
         .markdown-body { line-height: 1.6; }
         .markdown-body h1 { text-align: center; color: var(--text-main); padding-bottom: 15px; margin-top: 0; text-transform: uppercase; font-weight: 700; }
         .markdown-body p { margin-bottom: 1.2em; text-align: justify; }
         .markdown-body img { max-width: 100%; height: auto; display: block; margin: 15px auto; border-radius: 4px; }
-
+        .katex { font-size: 1.1em; color: var(--text-main); }
+        
         .chapter-nav { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); gap: 10px; }
         .nav-btn { background: transparent; border: 1px solid var(--text-main); color: var(--text-main); padding: 10px 15px; border-radius: 4px; cursor: pointer; font-family: 'Crimson Text', serif; font-weight: bold; display: flex; align-items: center; gap: 5px; transition: 0.2s; flex: 1; justify-content: center; }
         .nav-btn:active { background: rgba(0,0,0,0.1); }
         .nav-btn:disabled { opacity: 0.3; pointer-events: none; border-style: dashed; }
 
-        /* --- ফ্লোটিং কন্ট্রোলস --- */
         .controls {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             background: var(--bg-paper); padding: 10px 20px; border-radius: 50px;
@@ -84,10 +140,8 @@
         }
         .btn { background: none; border: none; cursor: pointer; color: var(--text-main); display: flex; align-items: center; justify-content: center; padding: 8px; border-radius: 50%; transition: 0.2s; min-width: 44px; min-height: 44px; }
         .btn:hover { background: rgba(0,0,0,0.08); }
-        .btn:active { transform: scale(0.95); }
-        .btn-text { font-weight: bold; font-family: sans-serif; font-size: 15px; }
-        .v-sep { width: 1px; height: 24px; background: var(--text-main); opacity: 0.2; flex-shrink: 0; }
-
+        .btn.active-mode { background: var(--accent); color: white; }
+        
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 24px; border-radius: 30px; font-size: 14px; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 5000; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(10px); }
 
@@ -95,142 +149,52 @@
         .book-card { background: var(--bg-paper); padding: 25px; border-radius: 8px; cursor: pointer; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: 0.3s; text-align: center; display: flex; flex-direction: column; justify-content: center; }
         .book-card:hover { transform: translateY(-5px); border-color: var(--accent); }
 
-        /* --- সার্চ মোডাল স্টাইল --- */
+        /* Search Modal & Tables (From Previous) */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
         .search-box { background: var(--bg-paper); color: var(--text-main); width: 95%; max-width: 600px; height: 80vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         .search-header { padding: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; gap: 10px; align-items: center; }
         .search-input { flex: 1; padding: 12px; font-size: 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 8px; background: transparent; color: var(--text-main); font-family: 'Lato', sans-serif; }
         .search-input:focus { outline: none; border-color: var(--accent); }
-        .search-tabs { display: flex; border-bottom: 1px solid rgba(0,0,0,0.1); background: rgba(0,0,0,0.02); }
-        .tab-btn { flex: 1; padding: 12px; background: none; border: none; cursor: pointer; font-weight: bold; color: var(--text-main); opacity: 0.6; border-bottom: 3px solid transparent; transition: 0.2s; }
-        .tab-btn.active { opacity: 1; border-bottom-color: var(--accent); background: rgba(0,0,0,0.05); }
         .search-results { flex: 1; overflow-y: auto; padding: 0; }
         .result-item { padding: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s; }
-        .result-item:hover { background: rgba(0,0,0,0.03); }
-        .res-title { font-weight: bold; font-size: 16px; display: block; margin-bottom: 4px; color: var(--accent); }
-        .res-sub { font-size: 13px; opacity: 0.7; display: block; margin-bottom: 6px; }
-        .res-snippet { font-size: 14px; font-family: 'Crimson Text', serif; display: block; line-height: 1.4; color: var(--text-main); }
         .highlight { background-color: var(--highlight); padding: 0 2px; border-radius: 2px; font-weight: bold; color: #000; }
-        .empty-state { padding: 40px; text-align: center; opacity: 0.6; }
+        
+        pre { background-color: #f5f5f5; border: 1px solid #e1e1e1; border-radius: 4px; padding: 16px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 14px; line-height: 1.5; color: #333; }
+        code { background-color: #eaeaea; padding: 2px 4px; border-radius: 3px; font-family: inherit; color: #c7254e; }
+        pre code { display: block; white-space: pre; word-wrap: normal; }
 
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
-        .modal-box { background: var(--bg-paper); color: var(--text-main); width: 90%; max-width: 400px; max-height: 70vh; border-radius: 8px; padding: 25px; display: flex; flex-direction: column; }
-        .chapter-list { overflow-y: auto; flex: 1; margin: 15px 0; border: 1px solid rgba(0,0,0,0.1); padding: 5px; border-radius: 4px; }
-        .checkbox-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer; }
-        .checkbox-item:hover { background: rgba(0,0,0,0.03); }
-        .action-btn { background: var(--text-main); color: var(--bg-paper); border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 15px; width: 100%; font-weight: bold; margin-top: 5px; }
-
-        @media print {
-            .controls, .no-print, .chapter-nav { display: none !important; }
-            .reader-area { padding: 0; overflow: visible; display: block; }
-            .book-sheet { box-shadow: none; padding: 0; margin: 0; max-width: 100%; }
-        }
+        table { width: 100%; border-collapse: collapse; margin: 25px 0; font-size: 0.95em; font-family: 'Lato', sans-serif; box-shadow: 0 0 20px rgba(0, 0, 0, 0.05); overflow: hidden; border-radius: 8px; }
+        table th { background-color: var(--accent); color: #ffffff; text-align: left; font-weight: bold; padding: 12px 15px; text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.05em; }
+        table td { padding: 12px 15px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        table tr:nth-of-type(even) { background-color: rgba(0, 0, 0, 0.03); }
+        table tr:last-of-type td { border-bottom: 2px solid var(--accent); }
         .loader { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.8); color: white; padding: 15px 30px; border-radius: 30px; z-index: 3000; font-family: sans-serif; }
-       
-        pre {
-    background-color: #f5f5f5; /* হালকা ধূসর ব্যাকগ্রাউন্ড */
-    border: 1px solid #e1e1e1; /* নরম সীমানা */
-    border-radius: 4px; /* কোণে হালকা গোলাকারতা */
-    padding: 16px; /* পর্যাপ্ত প্যাডিং */
-    overflow-x: auto; /* লম্বা কোড লাইনের জন্য স্ক্রোল */
-    font-family: 'Courier New', Courier, monospace; /* মনোস্পেস ফন্ট */
-    font-size: 14px; /* আরামদায়ক ফন্ট আকার */
-    line-height: 1.5; /* ভালভাবে পঠনযোগ্যতা */
-    color: #333; /* পাঠযোগ্য কালার */
-}
-
-code {
-    background-color: #eaeaea; /* হালকা পটভূমি রং */
-    padding: 2px 4px; /* ছোট প্যাডিং */
-    border-radius: 3px; /* কোণে মসৃণতা */
-    font-family: inherit; /* মূল ফন্ট ফ্যামিলি বজায় রাখা */
-    color: #c7254e; /* কোডের জন্য আলাদা রং */
-}
-
-pre code {
-    display: block; /* কোডকে ব্লক লেভেলে দেখানো */
-    white-space: pre; /* কোডের ফর্ম্যাটিং বজায় রাখে */
-    word-wrap: normal; /* শব্দের ভাঙ্গন না করা */
-}
-        /* --- টেবিল ডিজাইন --- */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 25px 0;
-    font-size: 0.5em; /* 0.5em খুব ছোট, তাই বাড়িয়ে 0.95em করা হলো */
-    font-family: 'Lato', sans-serif; /* পড়ার সুবিধার জন্য স্যান্স-শেরিফ ফন্ট */
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05); /* হালকা শ্যাডো */
-    overflow: hidden;
-    border-radius: 8px; /* কোণাগুলো গোল করার জন্য */
-}
-
-/* টেবিল হেডার */
-table th {
-    background-color: var(--accent); /* অ্যাপের অ্যাক্সেন্ট কালার (যেমন লাল/মেরুন) */
-    color: #ffffff; /* সাদা লেখা */
-    text-align: left;
-    font-weight: bold;
-    padding: 12px 15px;
-    text-transform: uppercase;
-    font-size: 0.85em;
-    letter-spacing: 0.05em;
-}
-
-/* টেবিল সেল */
-table td {
-    padding: 12px 15px;
-    border-bottom: 1px solid rgba(0,0,0,0.1); /* হালকা বর্ডার */
-}
-
-/* জেব্রা স্ট্রাইপ (আপনার চাওয়া অনুযায়ী, তবে আরও স্মার্ট) */
-/* আমরা rgba ব্যবহার করছি যেন ডার্ক/সেপিয়া মোডেও ভালো দেখায় */
-table tr:nth-of-type(even) {
-    background-color: rgba(0, 0, 0, 0.03); 
-}
-
-/* শেষ বর্ডার রিমুভ করা */
-table tr:last-of-type td {
-    border-bottom: 2px solid var(--accent);
-}
-
-/* হোভার ইফেক্ট (মাউস নিলে কালার চেঞ্জ হবে) */
-table tr:hover {
-    background-color: rgba(0, 0, 0, 0.07);
-    transition: background-color 0.2s ease;
-}
-
-/* --- ডার্ক মোড ফিক্স --- */
-/* ডার্ক মোডে টেবিলের লেখা যাতে পড়া যায় */
-body.theme-black table tr:nth-of-type(even) {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-body.theme-black table td {
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-body.theme-black table tr:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* --- মোবাইল রেসপন্সিভ --- */
-/* টেবিল বড় হলে যেন ডানে-বামে স্ক্রল করা যায় */
-.markdown-body table {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
-    white-space: nowrap;
-}
     </style>
 </head>
 <body>
 
     <div id="root"></div>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js"></script>
- 
+
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
 
         const MarkdownViewer = ({ content, fontSize }) => {
+            const rootRef = useRef();
             const html = marked.parse(content || '');
-            return <div className="markdown-body" style={{ fontSize: `${fontSize}px` }} dangerouslySetInnerHTML={{ __html: html }} />;
+            useEffect(() => {
+                if (rootRef.current && window.renderMathInElement) {
+                    window.renderMathInElement(rootRef.current, {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false},
+                            {left: '\\(', right: '\\)', display: false},
+                            {left: '\\[', right: '\\]', display: true}
+                        ],
+                        throwOnError: false
+                    });
+                }
+            }, [content]);
+            return <div ref={rootRef} className="markdown-body" style={{ fontSize: `${fontSize}px` }} dangerouslySetInnerHTML={{ __html: html }} />;
         };
 
         function App() {
@@ -245,252 +209,205 @@ body.theme-black table tr:hover {
             const [loading, setLoading] = useState(false);
             const [toastMsg, setToastMsg] = useState('');
 
-            // Search States
+            // Reading System State (NEW)
+            const [readingSystem, setReadingSystem] = useState('scroll'); // 'scroll' or 'flip'
+            const [flipPages, setFlipPages] = useState([]); // Stores all chapters for flip mode
+            const [currentFlipIndex, setCurrentFlipIndex] = useState(0); // 0 = Index Page
+
+            // Search & Utils
             const [showSearch, setShowSearch] = useState(false);
             const [searchQuery, setSearchQuery] = useState('');
-            const [searchTab, setSearchTab] = useState('content'); 
-            const [indexedContent, setIndexedContent] = useState([]);
-            const [isIndexing, setIsIndexing] = useState(false);
 
-            // Print States
-            const [showPrintModal, setShowPrintModal] = useState(false);
-            const [selectedChapters, setSelectedChapters] = useState([]);
-            const [printContent, setPrintContent] = useState([]); 
-
-            // --- Initial Load & History Listener ---
             useEffect(() => {
-                fetch('books/db.json')
-                    .then(res => res.json())
-                    .then(data => { 
-                        setBooks(data); 
-                        // Initial check without event
-                        handleRouting(data);
-                        indexAllContent(data);
-                    })
-                    .catch(err => console.log("books.json not found"));
+                fetch('books/db.json').then(res => res.json()).then(data => { setBooks(data); handleRouting(data); });
             }, []);
 
-            // Re-attach listener when books change to ensure data access
             useEffect(() => {
-                const listener = () => handleRouting(books);
-                window.addEventListener('popstate', listener);
-                return () => window.removeEventListener('popstate', listener);
-            }, [books]);
+                document.body.className = `theme-${theme}`;
+                const meta = document.getElementById("theme-color");
+                if (meta) meta.setAttribute("content", theme);
+            }, [theme]);
 
-            useEffect(() => {
-  document.body.className = `theme-${theme}`;
-
-  const meta = document.getElementById("theme-color");
-  if (meta) meta.setAttribute("content", theme);
-}, [theme]);
-        
-            // --- History & Routing Logic (The Core Fix) ---
-            const handleRouting = (data) => {
-                if (!data || !data.length) return;
-                
-                // 1. Handle Modals via Hash (Prioritized)
-                const hash = window.location.hash;
-                if (hash === '#search') {
-                    setShowSearch(true);
-                    setShowPrintModal(false);
-                } else if (hash === '#print') {
-                    setShowPrintModal(true);
-                    setShowSearch(false);
-                } else {
-                    setShowSearch(false);
-                    setShowPrintModal(false);
+            // Load All Chapters for Flip Mode
+            const loadFullBookForFlip = async (book) => {
+                if (!book) return;
+                setLoading(true);
+                try {
+                    // Fetch all chapters in parallel
+                    const promises = book.chapters.map(ch => fetch(`${book.folder}/${ch.file}`).then(r => r.text()));
+                    const texts = await Promise.all(promises);
+                    const pagesData = book.chapters.map((ch, i) => ({
+                        id: ch.id, title: ch.title, content: texts[i]
+                    }));
+                    setFlipPages(pagesData);
+                    setLoading(false);
+                } catch (e) {
+                    showToast("Error loading book pages");
+                    setLoading(false);
                 }
+            };
 
-                // 2. Handle Main Views via Params
+            const handleRouting = (data) => {
+                // Simplified routing for this demo to focus on new features
                 const params = new URLSearchParams(window.location.search);
                 const bId = params.get('book');
-                const cId = params.get('chapter');
-
                 if (bId) {
                     const book = data.find(b => b.id === bId);
                     if (book) {
                         setActiveBook(book);
-                        if (cId) {
-                            const chap = book.chapters.find(c => c.id === cId);
-                            if (chap) { 
-                                loadChapter(book, chap, false); // false = don't push state again
-                                return; 
-                            }
-                        }
-                        setViewMode('index');
-                        setActiveChapter(null);
+                        setViewMode('read'); // Default go to read
+                        // Determine initial chapter
+                        const cId = params.get('chapter');
+                        const chap = book.chapters.find(c => c.id === cId) || book.chapters[0];
+                        loadChapter(book, chap, false);
                     }
                 } else {
                     setViewMode('home');
-                    setActiveBook(null);
-                    setActiveChapter(null);
                 }
             };
 
-            const navigateTo = (book, chapter, hash = null) => {
-                const url = new URL(window.location);
-                
-                // Reset params
-                if (!book) {
-                    url.searchParams.delete('book');
-                    url.searchParams.delete('chapter');
-                } else {
-                    url.searchParams.set('book', book.id);
-                    if (chapter) url.searchParams.set('chapter', chapter.id);
-                    else url.searchParams.delete('chapter');
-                }
-
-                // Handle hash
-                if (hash) url.hash = hash; else url.hash = '';
-
-                // Push state and trigger routing manually (since pushState doesn't fire popstate)
-                window.history.pushState({}, '', url);
-                handleRouting(books);
-            };
-
-            const openModal = (type) => {
-                const url = new URL(window.location);
-                url.hash = type; // #search or #print
-                window.history.pushState({}, '', url);
-                handleRouting(books);
-            };
-
-            const closeModal = () => {
-                // Clicking close just goes back in history, removing the hash
-                window.history.back(); 
-            };
-
-            // --- Data Loading ---
             const loadChapter = (book, chapter, push = true) => {
-                if (push) navigateTo(book, chapter);
+                if(push) {
+                    const url = new URL(window.location);
+                    url.searchParams.set('book', book.id);
+                    url.searchParams.set('chapter', chapter.id);
+                    window.history.pushState({}, '', url);
+                }
                 
-                // Fetch content only if we are actually changing view or it's a direct load
-                // (Note: handleRouting calls this with push=false)
+                // For Scroll Mode
+                setActiveBook(book);
+                setActiveChapter(chapter);
                 setLoading(true);
                 fetch(`${book.folder}/${chapter.file}`).then(res => res.text()).then(text => {
-                    setMdContent(text); setActiveBook(book); setActiveChapter(chapter); setViewMode('read');
+                    setMdContent(text);
                     setLoading(false);
-                    const reader = document.getElementById('main-reader'); if(reader) reader.scrollTop = 0;
-                }).catch(() => {
-                    setMdContent("# লোড এরর\nফাইল খুঁজে পাওয়া যায়নি।"); setLoading(false);
-                    setActiveBook(book); setActiveChapter(chapter); setViewMode('read');
+                    const reader = document.getElementById('main-reader');
+                    if(reader) reader.scrollTop = 0;
                 });
+
+                // If switching to Flip Mode, we also need to sync the page index
+                // Note: Actual loading of all pages happens when user toggles mode or loads book
             };
 
-            // --- Search & Indexing ---
-            const indexAllContent = async (bookList) => {
-                setIsIndexing(true);
-                const promises = [];
-                bookList.forEach(book => {
-                    book.chapters.forEach(chap => {
-                        promises.push(
-                            fetch(`${book.folder}/${chap.file}`)
-                                .then(res => res.text())
-                                .then(text => ({
-                                    bookId: book.id,
-                                    bookTitle: book.title,
-                                    chapterId: chap.id,
-                                    chapterTitle: chap.title,
-                                    text: text, 
-                                    plainText: text.replace(/[#*_`]/g, '') 
-                                }))
-                                .catch(e => null)
-                        );
-                    });
-                });
-                try {
-                    const results = await Promise.all(promises);
-                    setIndexedContent(results.filter(r => r !== null));
-                } catch(e) { console.error(e); }
-                setIsIndexing(false);
-            };
-
-            const getSearchResults = () => {
-                if (!searchQuery.trim()) return [];
-                const q = searchQuery.toLowerCase();
-                if (searchTab === 'books') return books.filter(b => b.title.toLowerCase().includes(q));
-                else if (searchTab === 'chapters') {
-                    let chapters = [];
-                    books.forEach(b => { b.chapters.forEach(c => { if (c.title.toLowerCase().includes(q)) chapters.push({ ...c, bookTitle: b.title, bookId: b.id }); }); });
-                    return chapters;
+            const toggleReadingSystem = () => {
+                if (readingSystem === 'scroll') {
+                    // Switch to Flip
+                    setReadingSystem('flip');
+                    loadFullBookForFlip(activeBook);
+                    setCurrentFlipIndex(0); // Start at Index
                 } else {
-                    return indexedContent.filter(item => item.plainText.toLowerCase().includes(q)).map(item => {
-                        const idx = item.plainText.toLowerCase().indexOf(q);
-                        const start = Math.max(0, idx - 40);
-                        const end = Math.min(item.plainText.length, idx + q.length + 60);
-                        const snippet = (start > 0 ? "..." : "") + item.plainText.substring(start, end) + (end < item.plainText.length ? "..." : "");
-                        return { ...item, snippet };
-                    });
+                    // Switch to Scroll
+                    setReadingSystem('scroll');
+                    // Reload current active chapter in scroll view
+                    if(activeBook && activeBook.chapters.length > 0) {
+                        loadChapter(activeBook, activeBook.chapters[0]); 
+                    }
                 }
             };
 
-            const highlightText = (text, highlight) => {
-                if (!highlight.trim()) return text;
-                const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
-                return <span>{parts.map((part, i) => part.toLowerCase() === highlight.toLowerCase() ? <span key={i} className="highlight">{part}</span> : part)}</span>;
+            const navigateFlip = (dir) => {
+                if (dir === 'next' && currentFlipIndex < flipPages.length) {
+                    setCurrentFlipIndex(p => p + 1);
+                } else if (dir === 'prev' && currentFlipIndex > 0) {
+                    setCurrentFlipIndex(p => p - 1);
+                }
             };
 
-            const handleResultClick = (result) => {
-                // Go back to close modal
-                window.history.back();
-                // Then navigate after a tiny delay to allow modal close
-                setTimeout(() => {
-                    const book = books.find(b => b.id === (result.bookId || result.id)); // Handle book vs chapter obj
-                    if (searchTab === 'books') navigateTo(result, null);
-                    else if (searchTab === 'chapters') navigateTo(book, result);
-                    else {
-                        const chap = book.chapters.find(c => c.id === result.chapterId);
-                        navigateTo(book, chap);
-                    }
-                }, 50);
-            };
+            // --- COMPONENTS ---
 
-            // --- Other Utils ---
-            const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(''), 2500); };
-            const cycleTheme = () => setTheme(t => t==='white'?'sepia':t==='sepia'?'black':'white');
-            const increaseFont = () => setFontSize(prev => Math.min(prev + 2, 36));
-            const decreaseFont = () => setFontSize(prev => Math.max(prev - 2, 14));
-            
-            const handleShare = async () => {
-                const url = window.location.href;
-                const title = activeBook ? `${activeBook.title}` : 'Digital E-book';
-                if (navigator.share) { try { await navigator.share({ title, url }); return; } catch (err) {} }
-                try { await navigator.clipboard.writeText(url); showToast('লিংক কপি করা হয়েছে!'); } catch (err) { showToast('কপি করতে সমস্যা হয়েছে!'); }
-            };
-
-            const navigateChapter = (direction) => {
-                if (!activeBook || !activeChapter) return;
-                const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
-                if (direction === 'next' && idx < activeBook.chapters.length - 1) loadChapter(activeBook, activeBook.chapters[idx + 1]);
-                else if (direction === 'prev' && idx > 0) loadChapter(activeBook, activeBook.chapters[idx - 1]);
-            };
-
-            // --- Views ---
-            const SearchModal = () => (
-                <div className="modal-overlay" onClick={(e) => { if(e.target.className==='modal-overlay') closeModal() }}>
-                    <div className="search-box">
-                        <div className="search-header">
-                            <span className="material-icons">search</span>
-                            <input className="search-input" placeholder="খুঁজুন..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} autoFocus />
-                            <button className="btn" onClick={closeModal}><span className="material-icons">close</span></button>
+            // 1. Sidebar Component (New)
+            const Sidebar = () => (
+                <div className="sidebar">
+                    <div className="sidebar-header">{activeBook ? activeBook.title : 'Contents'}</div>
+                    {activeBook && activeBook.chapters.map(chap => (
+                        <div key={chap.id} 
+                             className={`sidebar-item ${activeChapter && activeChapter.id === chap.id ? 'active' : ''}`}
+                             onClick={() => loadChapter(activeBook, chap)}>
+                            {chap.title}
                         </div>
-                        <div className="search-tabs">
-                            {['books', 'chapters', 'content'].map(t => (
-                                <button key={t} className={`tab-btn ${searchTab===t?'active':''}`} onClick={()=>setSearchTab(t)}>
-                                    {t==='books'?'বই':t==='chapters'?'অধ্যায়':'কনটেন্ট'}
-                                </button>
-                            ))}
-                        </div>
-                        <div className="search-results">
-                            {isIndexing && searchTab === 'content' && indexedContent.length === 0 && <div className="empty-state">ইনডেক্সিং চলছে...</div>}
-                            {searchQuery && getSearchResults().length === 0 && <div className="empty-state">ফলাফল নেই</div>}
-                            {getSearchResults().map((item, idx) => (
-                                <div key={idx} className="result-item" onClick={() => handleResultClick(item)}>
-                                    {searchTab === 'books' && (<><span className="res-title">{highlightText(item.title, searchQuery)}</span><span className="res-sub">{item.chapters.length} টি অধ্যায়</span></>)}
-                                    {searchTab === 'chapters' && (<><span className="res-title">{highlightText(item.title, searchQuery)}</span><span className="res-sub">বই: {item.bookTitle}</span></>)}
-                                    {searchTab === 'content' && (<><span className="res-title">{item.chapterTitle}</span><span className="res-sub">বই: {item.bookTitle}</span><span className="res-snippet">{highlightText(item.snippet, searchQuery)}</span></>)}
+                    ))}
+                </div>
+            );
+
+            // 2. FlipBook View (New)
+            const FlipBookView = () => {
+                if (loading && flipPages.length === 0) return <div className="loader">বই সাজানো হচ্ছে...</div>;
+
+                // Index Page (Page 0)
+                if (currentFlipIndex === 0) {
+                    return (
+                        <div className="flip-container">
+                            <div className="flip-page" style={{textAlign:'center'}}>
+                                <h1 style={{color: 'var(--accent)', fontSize: '2.5rem', marginBottom:'10px'}}>{activeBook.title}</h1>
+                                <p style={{fontStyle:'italic', marginBottom:'30px'}}>সূচিপত্র (Index)</p>
+                                <div style={{textAlign:'left'}}>
+                                    {flipPages.map((page, idx) => (
+                                        <div key={page.id} className="flip-toc-item" onClick={() => setCurrentFlipIndex(idx + 1)}>
+                                            {idx + 1}. {page.title}
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
+                                <div className="page-number">Index Page</div>
+                            </div>
+                            <div className="flip-nav-overlay flip-nav-next" onClick={() => navigateFlip('next')}>
+                                <span className="material-icons nav-arrow">chevron_right</span>
+                            </div>
+                        </div>
+                    );
+                }
+
+                // Content Pages (Page 1 to N)
+                const pageData = flipPages[currentFlipIndex - 1]; // -1 because index 0 is TOC
+                return (
+                    <div className="flip-container">
+                        <div className="flip-nav-overlay flip-nav-prev" onClick={() => navigateFlip('prev')}>
+                            <span className="material-icons nav-arrow">chevron_left</span>
+                        </div>
+                        
+                        <div className="flip-page" id="flip-content-area">
+                            <div style={{textAlign:'center', borderBottom:'1px solid #ccc', marginBottom:'20px', paddingBottom:'10px', fontSize:'12px', color:'#888'}}>
+                                {activeBook.title} &bull; {pageData.title}
+                            </div>
+                            <MarkdownViewer content={pageData.content} fontSize={fontSize} />
+                            <div className="page-number">Page {currentFlipIndex} of {flipPages.length}</div>
+                        </div>
+
+                        <div className="flip-nav-overlay flip-nav-next" onClick={() => navigateFlip('next')}>
+                            {currentFlipIndex < flipPages.length && <span className="material-icons nav-arrow">chevron_right</span>}
+                        </div>
+                    </div>
+                );
+            };
+
+            const ScrollReaderView = () => (
+                <div className="reader-wrapper">
+                    {/* Sidebar only visible on desktop via CSS */}
+                    <Sidebar />
+                    
+                    <div className="reader-area" id="main-reader">
+                        <div className="book-sheet">
+                            <div style={{textAlign:'center', fontSize:'12px', textTransform:'uppercase', letterSpacing:'2px', marginBottom:'30px', opacity:0.6, borderBottom:'1px solid rgba(0,0,0,0.1)', paddingBottom:'10px'}}>{activeBook ? activeBook.title : ''}</div>
+                            <MarkdownViewer content={mdContent} fontSize={fontSize} />
+                            
+                            <div className="chapter-nav no-print">
+                                <button className="nav-btn" 
+                                    onClick={() => {
+                                        const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
+                                        if(idx > 0) loadChapter(activeBook, activeBook.chapters[idx-1]);
+                                    }} 
+                                    disabled={!activeBook || activeBook.chapters.findIndex(c => c.id === activeChapter?.id) <= 0}>
+                                    <span className="material-icons">west</span> আগের
+                                </button>
+                                <button className="nav-btn" 
+                                    onClick={() => {
+                                        const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
+                                        if(idx < activeBook.chapters.length - 1) loadChapter(activeBook, activeBook.chapters[idx+1]);
+                                    }}
+                                    disabled={!activeBook || activeBook.chapters.findIndex(c => c.id === activeChapter?.id) >= activeBook.chapters.length - 1} 
+                                    style={{background: 'var(--text-main)', color: 'var(--bg-paper)'}}>
+                                    পরের <span className="material-icons">east</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -500,36 +417,11 @@ body.theme-black table tr:hover {
                 <div className="reader-area">
                     <div className="book-sheet" style={{textAlign:'center', display:'flex', flexDirection:'column', justifyContent:'center', minHeight:'60vh', paddingBottom:'50px'}}>
                         <h1 style={{fontSize:'clamp(2rem, 5vw, 3rem)', color:'var(--accent)', marginBottom:'10px'}}>GPT Library</h1>
-                        <p style={{fontStyle:'italic', marginBottom:'40px', opacity:0.7}}>Select A Book To Read</p>
                         <div className="book-grid">
-                            {books.length > 0 ? books.map(b => (
-                                <div key={b.id} className="book-card" onClick={() => navigateTo(b, null)}>
-                                    <h3 style={{marginTop:0, fontSize:'1.2rem'}}>{b.title}</h3>
-                                    <p style={{fontSize:'14px', opacity:0.7}}>{b.chapters.length} Chapters</p>
-                                </div>
-                            )) : <p>loading...</p>}
-                        </div>
-                    </div>
-                </div>
-            );
-
-            const IndexView = () => (
-                <div className="reader-area">
-                    <div className="book-sheet">
-                        <div style={{textAlign:'center', marginBottom:'30px'}}>
-                            <h1 style={{margin:0, fontSize:'clamp(1.8rem, 4vw, 2.5rem)', lineHeight:'1.2'}}>{activeBook.title}</h1>
-                            <hr style={{borderTop:'2px solid var(--border-color)', width:'50px', margin:'20px auto', opacity:0.5}}/>
-                            <div style={{display:'flex', gap:'10px', justifyContent:'center'}}>
-                                <button onClick={() => {setSelectedChapters([]); openModal('print');}} className="no-print" style={{background:'transparent', border:'1px solid var(--text-main)', padding:'6px 15px', borderRadius:'20px', cursor:'pointer', color:'var(--text-main)', fontSize:'13px', display:'inline-flex', alignItems:'center', gap:'5px'}}>
-                                    <span className="material-icons" style={{fontSize:'16px'}}>picture_as_pdf</span> PDF
-                                </button>
-                            </div>
-                        </div>
-                        <div>
-                            {activeBook.chapters.map(chap => (
-                                <div key={chap.id} onClick={() => loadChapter(activeBook, chap)}
-                                     style={{padding:'18px 10px', borderBottom:'1px dashed rgba(0,0,0,0.1)', cursor:'pointer', display:'flex', justifyContent:'space-between', fontSize:'17px', alignItems:'center'}}>
-                                    <span style={{fontWeight:'600'}}>{chap.title}</span><span className="material-icons" style={{fontSize:'18px', opacity:0.5}}>chevron_right</span>
+                            {books.map(b => (
+                                <div key={b.id} className="book-card" onClick={() => { setActiveBook(b); loadChapter(b, b.chapters[0]); setViewMode('read'); }}>
+                                    <h3>{b.title}</h3>
+                                    <p>{b.chapters.length} Chapters</p>
                                 </div>
                             ))}
                         </div>
@@ -537,86 +429,41 @@ body.theme-black table tr:hover {
                 </div>
             );
 
-            const ReadView = () => (
-                <div className="reader-area" id="main-reader">
-                    <div className="book-sheet">
-                        <div style={{textAlign:'center', fontSize:'12px', textTransform:'uppercase', letterSpacing:'2px', marginBottom:'30px', opacity:0.6, borderBottom:'1px solid rgba(0,0,0,0.1)', paddingBottom:'10px'}}>{activeBook.title}</div>
-                        <MarkdownViewer content={mdContent} fontSize={fontSize} />
-                        <div className="chapter-nav no-print">
-                            <button className="nav-btn" onClick={() => navigateChapter('prev')} disabled={activeBook.chapters.findIndex(c => c.id === activeChapter.id) <= 0}><span className="material-icons">west</span> আগের</button>
-                            <button className="nav-btn" onClick={() => navigateChapter('next')} disabled={activeBook.chapters.findIndex(c => c.id === activeChapter.id) >= activeBook.chapters.length - 1} style={{background: 'var(--text-main)', color: 'var(--bg-paper)'}}>পরের <span className="material-icons">east</span></button>
-                        </div>
-                    </div>
-                </div>
-            );
-
-            const PrintModal = () => (
-                <div className="modal-overlay">
-                    <div className="modal-box">
-                        <h3 style={{marginTop:0, borderBottom:'1px solid var(--border-color)', paddingBottom:'10px'}}>অধ্যায় নির্বাচন করুন</h3>
-                        <div className="chapter-list">
-                            <label className="checkbox-item" style={{fontWeight:'bold', background:'rgba(0,0,0,0.05)'}}>
-                                <input type="checkbox" onChange={() => setSelectedChapters(selectedChapters.length === activeBook.chapters.length ? [] : activeBook.chapters.map(c=>c.id))} checked={selectedChapters.length === activeBook.chapters.length} style={{marginRight:'10px', transform:'scale(1.2)'}} /> সব সিলেক্ট করুন
-                            </label>
-                            {activeBook.chapters.map(chap => (
-                                <label key={chap.id} className="checkbox-item">
-                                    <input type="checkbox" checked={selectedChapters.includes(chap.id)} onChange={() => setSelectedChapters(p => p.includes(chap.id) ? p.filter(i => i !== chap.id) : [...p, chap.id])} style={{marginRight:'10px', transform:'scale(1.2)'}} /> {chap.title}
-                                </label>
-                            ))}
-                        </div>
-                        <div style={{display:'flex', gap:'10px'}}>
-                            <button onClick={() => {
-                                if(!selectedChapters.length) return alert("Select at least one");
-                                setLoading(true); closeModal();
-                                Promise.all(activeBook.chapters.filter(c => selectedChapters.includes(c.id)).map(c => fetch(`${activeBook.folder}/${c.file}`).then(r=>r.text())))
-                                .then(txts => {
-                                    setPrintContent(activeBook.chapters.filter(c=>selectedChapters.includes(c.id)).map((c,i)=>({title:c.title, content:txts[i]})));
-                                    setViewMode('print-preview'); setLoading(false); setTimeout(()=>window.print(),800);
-                                });
-                            }} className="action-btn">প্রিন্ট প্রিভিউ</button>
-                            <button onClick={closeModal} className="action-btn" style={{background:'transparent', color:'var(--text-main)', border:'1px solid var(--text-main)'}}>বাতিল</button>
-                        </div>
-                    </div>
-                </div>
-            );
+            // Utils
+            const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(''), 2500); };
+            const cycleTheme = () => setTheme(t => t==='white'?'sepia':t==='sepia'?'black':'white');
 
             return (
                 <div className="app-container">
                     <div className={`toast ${toastMsg ? 'show' : ''}`}>{toastMsg}</div>
                     {loading && <div className="loader">লোড হচ্ছে...</div>}
-                    
-                    {showSearch && <SearchModal />}
-                    {showPrintModal && <PrintModal />}
-                    
+
                     {viewMode === 'home' && <HomeView />}
-                    {viewMode === 'index' && <IndexView />}
-                    {viewMode === 'read' && <ReadView />}
                     
-                    {viewMode === 'print-preview' && (
-                        <div className="reader-area">
-                            <div className="book-sheet">
-                                <div className="no-print" style={{textAlign:'center', marginBottom:'20px'}}>
-                                    <button onClick={() => window.print()} className="action-btn" style={{width:'auto', marginRight:'10px'}}>Save PDF</button>
-                                    <button onClick={() => setViewMode('index')} className="action-btn" style={{width:'auto', background:'#666'}}>Back</button>
-                                </div>
-                                {printContent.map((c, i) => (
-                                    <div key={i} style={{pageBreakAfter:'always'}}>
-                                        <h2>{c.title}</h2>
-                                        <MarkdownViewer content={c.content} fontSize={14} />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                    {viewMode === 'read' && (
+                        readingSystem === 'scroll' ? <ScrollReaderView /> : <FlipBookView />
                     )}
-                    
+
+                    {/* Controls */}
                     <div className="controls no-print">
-                        <button className="btn" onClick={() => navigateTo(null)} title="হোম"><span className="material-icons">home</span></button>
+                        <button className="btn" onClick={() => { setViewMode('home'); setActiveBook(null); }} title="হোম"><span className="material-icons">home</span></button>
                         <div className="v-sep"></div>
-                        <button className="btn" onClick={() => openModal('search')} title="সার্চ"><span className="material-icons" style={{color: 'var(--accent)'}}>search</span></button>
-                        <div className="v-sep"></div>
-                        {viewMode !== 'home' && <><button className="btn" onClick={handleShare} title="শেয়ার"><span className="material-icons" style={{color: 'var(--accent)'}}>share</span></button><div className="v-sep"></div></>}
-                        {viewMode === 'read' && <><button className="btn" onClick={() => navigateTo(activeBook, null)} title="সূচিপত্র"><span className="material-icons">list</span></button><div className="v-sep"></div><button className="btn" onClick={decreaseFont}><span className="btn-text">A-</span></button><button className="btn" onClick={increaseFont}><span className="btn-text">A+</span></button><div className="v-sep"></div></>}
-                        <button className="btn" onClick={cycleTheme} title="থিম"><span className="material-icons">{theme === 'white' ? 'brightness_5' : theme === 'sepia' ? 'menu_book' : 'dark_mode'}</span></button>
+                        
+                        {/* Mode Switcher */}
+                        {viewMode === 'read' && (
+                            <>
+                                <button className={`btn ${readingSystem === 'scroll' ? 'active-mode' : ''}`} onClick={() => readingSystem !== 'scroll' && toggleReadingSystem()} title="স্ক্রল মোড">
+                                    <span className="material-icons">article</span>
+                                </button>
+                                <button className={`btn ${readingSystem === 'flip' ? 'active-mode' : ''}`} onClick={() => readingSystem !== 'flip' && toggleReadingSystem()} title="ফ্লিপবুক মোড">
+                                    <span className="material-icons">auto_stories</span>
+                                </button>
+                                <div className="v-sep"></div>
+                            </>
+                        )}
+                        
+                        {viewMode === 'read' && <><button className="btn" onClick={() => setFontSize(f=>f-2)}><span className="btn-text">A-</span></button><button className="btn" onClick={() => setFontSize(f=>f+2)}><span className="btn-text">A+</span></button><div className="v-sep"></div></>}
+                        <button className="btn" onClick={cycleTheme}><span className="material-icons">{theme === 'white' ? 'brightness_5' : 'dark_mode'}</span></button>
                     </div>
                 </div>
             );
@@ -625,7 +472,5 @@ body.theme-black table tr:hover {
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js"></script>
- 
 </body>
 </html>

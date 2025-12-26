@@ -39,98 +39,103 @@
             --sidebar-width: 280px;
         }
 
-        /* থিমস */
         body.theme-white { --bg-body: #f0f2f5; --bg-paper: #ffffff; --text-main: #2c2c2c; --border-color: #ddd; }
         body.theme-sepia { --bg-body: #f4ecd8; --bg-paper: #fdf6e3; --text-main: #5b4636; --border-color: #d3c0a5; --accent: #a0522d; --highlight: #ffdfba; }
         body.theme-black { --bg-body: #121212; --bg-paper: #1e1e1e; --text-main: #d1d1d1; --border-color: #444; --accent: #ff6b6b; --shadow: 0 5px 20px rgba(0,0,0,0.5); --highlight: #4a4a4a; }
 
-        html { width: 100%; height: 100%; }
+        html { width: 100%; height: 100%; overflow: hidden; }
         body { 
             margin: 0; padding: 0; width: 100%; height: 100%;
             background-color: var(--bg-body); color: var(--text-main); 
-            font-family: 'Crimson Text', serif; overflow: hidden; 
-            transition: background 0.3s ease, color 0.3s ease;
+            font-family: 'Crimson Text', serif;
         }
 
-        .app-container { display: flex; flex-direction: column; width: 100%; height: 100vh; height: 100dvh; background-color: var(--bg-body); }
+        .app-container { display: flex; flex-direction: column; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; }
         
-        /* Layout for Sidebar + Reader */
-        .reader-wrapper { display: flex; flex: 1; overflow: hidden; position: relative; width: 100%; max-width: 1400px; margin: 0 auto; }
-        
-        /* --- Sidebar (New Feature) --- */
+        /* Sidebar (Desktop Only) */
         .sidebar {
             width: var(--sidebar-width);
             background: var(--bg-paper);
             border-right: 1px solid var(--border-color);
             overflow-y: auto;
-            display: none; /* Hidden by default on mobile */
+            display: none;
             flex-direction: column;
             z-index: 100;
-            transition: transform 0.3s ease;
+            height: 100%;
         }
-        
         .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border-color); font-weight: bold; font-family: 'Lato', sans-serif; color: var(--accent); }
         .sidebar-item { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 15px; transition: 0.2s; }
         .sidebar-item:hover { background: rgba(0,0,0,0.05); }
         .sidebar-item.active { background: var(--accent); color: #fff; }
 
-        @media (min-width: 992px) {
-            .sidebar { display: flex; } /* Show on Desktop */
-        }
+        /* SCROLL MODE STYLES */
+        .scroll-mode-wrapper { display: flex; flex: 1; overflow: hidden; width: 100%; max-width: 1400px; margin: 0 auto; }
+        .scroll-reader-area { flex: 1; overflow-y: auto; padding: 20px; scroll-behavior: smooth; display: flex; justify-content: center; position: relative; }
+        
+        @media (min-width: 992px) { .sidebar { display: flex; } }
 
-        .reader-area { flex: 1; overflow-y: auto; padding: 20px; scroll-behavior: smooth; display: flex; justify-content: center; background-color: var(--bg-body); position: relative; }
-
-        /* --- বইয়ের পাতা --- */
         .book-sheet {
             background-color: var(--bg-paper); color: var(--text-main);
             width: 100%; max-width: 800px; min-height: 100%; height: fit-content;
-            padding: 60px 50px; padding-bottom: var(--safe-bottom);
-            box-shadow: var(--shadow); margin-bottom: 20px; border-radius: 4px; position: relative;
+            padding: 60px 50px; padding-bottom: 100px;
+            box-shadow: var(--shadow); border-radius: 4px;
         }
 
-        @media (max-width: 768px) {
-            .reader-area { padding: 0; }
-            .book-sheet { max-width: 100%; padding: 30px 20px; padding-bottom: 120px; box-shadow: none; margin-bottom: 0; border-radius: 0; }
+        /* --- FLIPBOOK / PAGINATED MODE STYLES (New) --- */
+        .flip-wrapper {
+            flex: 1; width: 100%; height: 100%; 
+            display: flex; justify-content: center; align-items: center; 
+            overflow: hidden; perspective: 1000px;
+            position: relative;
         }
-
-        /* --- FLIPBOOK STYLES (New Feature) --- */
-        .flip-container {
-            width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;
-            perspective: 1500px; overflow: hidden; padding: 10px;
-        }
-        .flip-page {
-            width: 100%; max-width: 750px; height: 95%; background: var(--bg-paper);
-            box-shadow: var(--shadow); border-radius: 5px; overflow-y: auto;
-            padding: 50px; position: relative; border-left: 5px solid rgba(0,0,0,0.1);
-            animation: fadeIn 0.4s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        .flip-toc-item { padding: 15px; border-bottom: 1px dashed var(--border-color); cursor: pointer; font-size: 18px; }
-        .flip-toc-item:hover { background: rgba(0,0,0,0.05); color: var(--accent); }
-        
-        .page-number { position: absolute; bottom: 15px; right: 20px; font-size: 12px; opacity: 0.5; }
-        .flip-nav-overlay {
-            position: absolute; top: 0; bottom: 0; width: 15%; z-index: 50; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.2s;
+        /* The Pagination Container using CSS Columns */
+        .paginated-container {
+            width: 100%; height: 100%;
+            padding: 40px 20px; /* Padding creates margins */
+            padding-bottom: 80px;
+            column-width: 100vw; /* Trick to force one page per screen width */
+            column-gap: 40px;
+            column-fill: auto;
+            height: calc(100vh - 80px); /* Adjust based on header/footer */
+            overflow-y: hidden; /* Hide vertical scroll */
+            overflow-x: hidden; /* We manage horizontal scroll manually */
+            
+            /* Positioning for the slide effect */
+            transform: translateX(0);
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s;
         }
-        .flip-nav-overlay:hover { opacity: 1; background: rgba(0,0,0,0.02); }
-        .flip-nav-prev { left: 0; }
-        .flip-nav-next { right: 0; }
-        .nav-arrow { font-size: 40px; color: var(--text-main); background: var(--bg-paper); border-radius: 50%; padding: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
 
-        /* Existing Styles */
-        .markdown-body { line-height: 1.6; }
-        .markdown-body h1 { text-align: center; color: var(--text-main); padding-bottom: 15px; margin-top: 0; text-transform: uppercase; font-weight: 700; }
-        .markdown-body p { margin-bottom: 1.2em; text-align: justify; }
-        .markdown-body img { max-width: 100%; height: auto; display: block; margin: 15px auto; border-radius: 4px; }
-        .katex { font-size: 1.1em; color: var(--text-main); }
-        
-        .chapter-nav { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); gap: 10px; }
-        .nav-btn { background: transparent; border: 1px solid var(--text-main); color: var(--text-main); padding: 10px 15px; border-radius: 4px; cursor: pointer; font-family: 'Crimson Text', serif; font-weight: bold; display: flex; align-items: center; gap: 5px; transition: 0.2s; flex: 1; justify-content: center; }
-        .nav-btn:active { background: rgba(0,0,0,0.1); }
-        .nav-btn:disabled { opacity: 0.3; pointer-events: none; border-style: dashed; }
+        /* Adjust content for pagination */
+        .paginated-content {
+            font-size: 1.1em;
+            text-align: justify;
+        }
+        .paginated-content p, .paginated-content h1, .paginated-content h2, .paginated-content img, .paginated-content pre {
+            break-inside: avoid; /* Prevent splitting elements across columns */
+            page-break-inside: avoid;
+            max-width: 100%;
+        }
+        .paginated-content img { max-height: 80vh; width: auto; display: block; margin: 0 auto; }
 
+        /* Animation classes */
+        .page-turning { opacity: 0.5; transform-origin: left center; transform: rotateY(-10deg); }
+
+        /* Footer in Flip Mode */
+        .flip-footer {
+            position: absolute; bottom: 15px; width: 100%; text-align: center;
+            font-size: 12px; opacity: 0.6; z-index: 200; pointer-events: none;
+            font-family: 'Lato', sans-serif;
+        }
+
+        /* Click Zones for Desktop */
+        .click-zone { position: absolute; top: 0; bottom: 60px; width: 15%; z-index: 50; cursor: pointer; }
+        .zone-prev { left: 0; }
+        .zone-next { right: 0; }
+        .zone-prev:hover { background: linear-gradient(to right, rgba(0,0,0,0.05), transparent); }
+        .zone-next:hover { background: linear-gradient(to left, rgba(0,0,0,0.05), transparent); }
+
+        /* --- Shared Styles --- */
         .controls {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             background: var(--bg-paper); padding: 10px 20px; border-radius: 50px;
@@ -138,37 +143,38 @@
             border: 1px solid var(--border-color); align-items: center;
             max-width: 95%; overflow-x: auto;
         }
-        .btn { background: none; border: none; cursor: pointer; color: var(--text-main); display: flex; align-items: center; justify-content: center; padding: 8px; border-radius: 50%; transition: 0.2s; min-width: 44px; min-height: 44px; }
+        .btn { background: none; border: none; cursor: pointer; color: var(--text-main); padding: 8px; border-radius: 50%; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
         .btn:hover { background: rgba(0,0,0,0.08); }
         .btn.active-mode { background: var(--accent); color: white; }
-        
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 24px; border-radius: 30px; font-size: 14px; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 5000; }
+        .v-sep { width: 1px; height: 24px; background: var(--text-main); opacity: 0.2; }
+        .loader { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.8); color: white; padding: 15px 30px; border-radius: 30px; z-index: 3000; }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 24px; border-radius: 30px; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 5000; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(10px); }
 
-        .book-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; padding: 10px; }
-        .book-card { background: var(--bg-paper); padding: 25px; border-radius: 8px; cursor: pointer; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: 0.3s; text-align: center; display: flex; flex-direction: column; justify-content: center; }
-        .book-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        /* Index Page for Flip Mode */
+        .flip-index-page {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; text-align: center; padding: 20px; overflow-y: auto;
+        }
+        .index-list { width: 100%; max-width: 500px; text-align: left; margin-top: 20px; max-height: 60vh; overflow-y: auto; }
+        .index-item { padding: 15px; border-bottom: 1px dashed var(--border-color); cursor: pointer; }
+        .index-item:hover { color: var(--accent); background: rgba(0,0,0,0.05); }
 
-        /* Search Modal & Tables (From Previous) */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
-        .search-box { background: var(--bg-paper); color: var(--text-main); width: 95%; max-width: 600px; height: 80vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .search-header { padding: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; gap: 10px; align-items: center; }
-        .search-input { flex: 1; padding: 12px; font-size: 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 8px; background: transparent; color: var(--text-main); font-family: 'Lato', sans-serif; }
-        .search-input:focus { outline: none; border-color: var(--accent); }
-        .search-results { flex: 1; overflow-y: auto; padding: 0; }
-        .result-item { padding: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s; }
-        .highlight { background-color: var(--highlight); padding: 0 2px; border-radius: 2px; font-weight: bold; color: #000; }
+        /* Common Markdown Styles */
+        .markdown-body { line-height: 1.6; }
+        .markdown-body h1 { text-align: center; margin-top: 0; text-transform: uppercase; }
+        .katex { font-size: 1.1em; color: var(--text-main); }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.85em; }
+        table th { background: var(--accent); color: #fff; padding: 8px; }
+        table td { border-bottom: 1px solid rgba(0,0,0,0.1); padding: 8px; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; border-radius: 4px; }
         
-        pre { background-color: #f5f5f5; border: 1px solid #e1e1e1; border-radius: 4px; padding: 16px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 14px; line-height: 1.5; color: #333; }
-        code { background-color: #eaeaea; padding: 2px 4px; border-radius: 3px; font-family: inherit; color: #c7254e; }
-        pre code { display: block; white-space: pre; word-wrap: normal; }
-
-        table { width: 100%; border-collapse: collapse; margin: 25px 0; font-size: 0.95em; font-family: 'Lato', sans-serif; box-shadow: 0 0 20px rgba(0, 0, 0, 0.05); overflow: hidden; border-radius: 8px; }
-        table th { background-color: var(--accent); color: #ffffff; text-align: left; font-weight: bold; padding: 12px 15px; text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.05em; }
-        table td { padding: 12px 15px; border-bottom: 1px solid rgba(0,0,0,0.1); }
-        table tr:nth-of-type(even) { background-color: rgba(0, 0, 0, 0.03); }
-        table tr:last-of-type td { border-bottom: 2px solid var(--accent); }
-        .loader { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.8); color: white; padding: 15px 30px; border-radius: 30px; z-index: 3000; font-family: sans-serif; }
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .paginated-container { padding: 30px 15px; column-gap: 30px; }
+            .book-sheet { padding: 30px 20px; padding-bottom: 100px; border-radius: 0; box-shadow: none; }
+            .click-zone { display: none; } /* Mobile uses swipe only */
+        }
     </style>
 </head>
 <body>
@@ -176,9 +182,10 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect, useRef, useLayoutEffect } = React;
 
-        const MarkdownViewer = ({ content, fontSize }) => {
+        // --- Markdown & KaTeX Component ---
+        const MarkdownViewer = ({ content, fontSize, className }) => {
             const rootRef = useRef();
             const html = marked.parse(content || '');
             useEffect(() => {
@@ -189,37 +196,40 @@
                             {left: '$', right: '$', display: false},
                             {left: '\\(', right: '\\)', display: false},
                             {left: '\\[', right: '\\]', display: true}
-                        ],
-                        throwOnError: false
+                        ], throwOnError: false
                     });
                 }
             }, [content]);
-            return <div ref={rootRef} className="markdown-body" style={{ fontSize: `${fontSize}px` }} dangerouslySetInnerHTML={{ __html: html }} />;
+            return <div ref={rootRef} className={`markdown-body ${className || ''}`} style={{ fontSize: `${fontSize}px` }} dangerouslySetInnerHTML={{ __html: html }} />;
         };
 
         function App() {
-            // Main States
+            // Data & View State
             const [books, setBooks] = useState([]);
             const [activeBook, setActiveBook] = useState(null);
             const [activeChapter, setActiveChapter] = useState(null);
             const [mdContent, setMdContent] = useState('');
-            const [viewMode, setViewMode] = useState('home'); 
-            const [theme, setTheme] = useState('white'); 
+            const [viewMode, setViewMode] = useState('home'); // home, read
+            const [readingSystem, setReadingSystem] = useState('scroll'); // scroll, flip
+            
+            // Settings
+            const [theme, setTheme] = useState('white');
             const [fontSize, setFontSize] = useState(19);
             const [loading, setLoading] = useState(false);
             const [toastMsg, setToastMsg] = useState('');
 
-            // Reading System State (NEW)
-            const [readingSystem, setReadingSystem] = useState('scroll'); // 'scroll' or 'flip'
-            const [flipPages, setFlipPages] = useState([]); // Stores all chapters for flip mode
-            const [currentFlipIndex, setCurrentFlipIndex] = useState(0); // 0 = Index Page
-
-            // Search & Utils
+            // Search (Simplified for this snippet)
             const [showSearch, setShowSearch] = useState(false);
-            const [searchQuery, setSearchQuery] = useState('');
 
+            // --- Flip Mode Specific States ---
+            const [flipCurrentPage, setFlipCurrentPage] = useState(0); // 0 = start of chapter
+            const [flipTotalPages, setFlipTotalPages] = useState(1);
+            const contentRef = useRef(null); // Reference to the paginated column container
+            const [isIndexPage, setIsIndexPage] = useState(false); // True if showing Book Index in flip mode
+
+            // Initial Load
             useEffect(() => {
-                fetch('books/db.json').then(res => res.json()).then(data => { setBooks(data); handleRouting(data); });
+                fetch('books/db.json').then(res => res.json()).then(data => { setBooks(data); });
             }, []);
 
             useEffect(() => {
@@ -228,185 +238,188 @@
                 if (meta) meta.setAttribute("content", theme);
             }, [theme]);
 
-            // Load All Chapters for Flip Mode
-            const loadFullBookForFlip = async (book) => {
-                if (!book) return;
+            // --- Navigation Logic ---
+            const loadChapter = async (book, chapter) => {
                 setLoading(true);
-                try {
-                    // Fetch all chapters in parallel
-                    const promises = book.chapters.map(ch => fetch(`${book.folder}/${ch.file}`).then(r => r.text()));
-                    const texts = await Promise.all(promises);
-                    const pagesData = book.chapters.map((ch, i) => ({
-                        id: ch.id, title: ch.title, content: texts[i]
-                    }));
-                    setFlipPages(pagesData);
-                    setLoading(false);
-                } catch (e) {
-                    showToast("Error loading book pages");
-                    setLoading(false);
-                }
-            };
-
-            const handleRouting = (data) => {
-                // Simplified routing for this demo to focus on new features
-                const params = new URLSearchParams(window.location.search);
-                const bId = params.get('book');
-                if (bId) {
-                    const book = data.find(b => b.id === bId);
-                    if (book) {
-                        setActiveBook(book);
-                        setViewMode('read'); // Default go to read
-                        // Determine initial chapter
-                        const cId = params.get('chapter');
-                        const chap = book.chapters.find(c => c.id === cId) || book.chapters[0];
-                        loadChapter(book, chap, false);
-                    }
-                } else {
-                    setViewMode('home');
-                }
-            };
-
-            const loadChapter = (book, chapter, push = true) => {
-                if(push) {
-                    const url = new URL(window.location);
-                    url.searchParams.set('book', book.id);
-                    url.searchParams.set('chapter', chapter.id);
-                    window.history.pushState({}, '', url);
-                }
-                
-                // For Scroll Mode
                 setActiveBook(book);
                 setActiveChapter(chapter);
-                setLoading(true);
-                fetch(`${book.folder}/${chapter.file}`).then(res => res.text()).then(text => {
+                try {
+                    const res = await fetch(`${book.folder}/${chapter.file}`);
+                    const text = await res.text();
                     setMdContent(text);
                     setLoading(false);
-                    const reader = document.getElementById('main-reader');
-                    if(reader) reader.scrollTop = 0;
-                });
-
-                // If switching to Flip Mode, we also need to sync the page index
-                // Note: Actual loading of all pages happens when user toggles mode or loads book
+                    // Reset positions
+                    if (readingSystem === 'scroll') {
+                        const reader = document.getElementById('scroll-reader');
+                        if(reader) reader.scrollTop = 0;
+                    } else {
+                        setFlipCurrentPage(0); // Start at page 1 (index 0) of the new chapter
+                    }
+                } catch(e) {
+                    setMdContent("# Error Loading Chapter");
+                    setLoading(false);
+                }
             };
 
             const toggleReadingSystem = () => {
-                if (readingSystem === 'scroll') {
-                    // Switch to Flip
-                    setReadingSystem('flip');
-                    loadFullBookForFlip(activeBook);
-                    setCurrentFlipIndex(0); // Start at Index
+                const newSystem = readingSystem === 'scroll' ? 'flip' : 'scroll';
+                setReadingSystem(newSystem);
+                if (newSystem === 'flip') {
+                    // Go to Index page first when switching to Flip mode usually feels better
+                    setIsIndexPage(true);
                 } else {
-                    // Switch to Scroll
-                    setReadingSystem('scroll');
-                    // Reload current active chapter in scroll view
-                    if(activeBook && activeBook.chapters.length > 0) {
-                        loadChapter(activeBook, activeBook.chapters[0]); 
+                    // Switch back to scroll mode with current chapter
+                    setIsIndexPage(false);
+                }
+            };
+
+            // --- FLIP MODE LOGIC (The Core Request) ---
+            
+            // Calculate total pages when content or resize happens
+            useLayoutEffect(() => {
+                if (readingSystem === 'flip' && !isIndexPage && contentRef.current) {
+                    const { scrollWidth, clientWidth } = contentRef.current;
+                    // Total pages = Total scroll width / width of one "page" (screen)
+                    const pages = Math.ceil(scrollWidth / (clientWidth + 40)); // 40 is approximate gap
+                    setFlipTotalPages(Math.max(1, pages));
+                }
+            }, [mdContent, fontSize, readingSystem, isIndexPage, activeChapter]);
+
+            // Handle Page Turn in Flip Mode
+            const handleFlipTurn = (direction) => {
+                if (direction === 'next') {
+                    if (flipCurrentPage < flipTotalPages - 1) {
+                        setFlipCurrentPage(p => p + 1);
+                    } else {
+                        // End of chapter, ask to go to next chapter
+                        const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
+                        if (idx < activeBook.chapters.length - 1) {
+                            if(confirm("পরের অধ্যায়ে যাবেন?")) {
+                                loadChapter(activeBook, activeBook.chapters[idx + 1]);
+                            }
+                        } else {
+                            showToast("বই শেষ!");
+                        }
+                    }
+                } else {
+                    if (flipCurrentPage > 0) {
+                        setFlipCurrentPage(p => p - 1);
+                    } else {
+                        // Ask to go to index or prev chapter
+                        const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
+                        if (idx > 0) {
+                             if(confirm("আগের অধ্যায়ে যাবেন?")) {
+                                loadChapter(activeBook, activeBook.chapters[idx - 1]);
+                            }
+                        } else {
+                            setIsIndexPage(true); // Go back to TOC
+                        }
                     }
                 }
             };
 
-            const navigateFlip = (dir) => {
-                if (dir === 'next' && currentFlipIndex < flipPages.length) {
-                    setCurrentFlipIndex(p => p + 1);
-                } else if (dir === 'prev' && currentFlipIndex > 0) {
-                    setCurrentFlipIndex(p => p - 1);
+            // Touch Handling for Swipe
+            const touchStart = useRef(null);
+            const handleTouchStart = (e) => { touchStart.current = e.touches[0].clientX; };
+            const handleTouchEnd = (e) => {
+                if (!touchStart.current) return;
+                const touchEnd = e.changedTouches[0].clientX;
+                const diff = touchStart.current - touchEnd;
+                
+                // Swipe Threshold (e.g., 50px)
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) handleFlipTurn('next'); // Swipe Left -> Next
+                    else handleFlipTurn('prev'); // Swipe Right -> Prev
                 }
+                touchStart.current = null;
             };
 
             // --- COMPONENTS ---
 
-            // 1. Sidebar Component (New)
             const Sidebar = () => (
                 <div className="sidebar">
-                    <div className="sidebar-header">{activeBook ? activeBook.title : 'Contents'}</div>
-                    {activeBook && activeBook.chapters.map(chap => (
-                        <div key={chap.id} 
-                             className={`sidebar-item ${activeChapter && activeChapter.id === chap.id ? 'active' : ''}`}
-                             onClick={() => loadChapter(activeBook, chap)}>
-                            {chap.title}
+                    <div className="sidebar-header">{activeBook?.title}</div>
+                    {activeBook?.chapters.map(c => (
+                        <div key={c.id} className={`sidebar-item ${activeChapter?.id === c.id ? 'active' : ''}`}
+                             onClick={() => {
+                                 if(readingSystem==='flip') { setIsIndexPage(false); loadChapter(activeBook, c); }
+                                 else loadChapter(activeBook, c);
+                             }}>
+                            {c.title}
                         </div>
                     ))}
                 </div>
             );
 
-            // 2. FlipBook View (New)
-            const FlipBookView = () => {
-                if (loading && flipPages.length === 0) return <div className="loader">বই সাজানো হচ্ছে...</div>;
-
-                // Index Page (Page 0)
-                if (currentFlipIndex === 0) {
+            const FlipView = () => {
+                if (isIndexPage) {
                     return (
-                        <div className="flip-container">
-                            <div className="flip-page" style={{textAlign:'center'}}>
-                                <h1 style={{color: 'var(--accent)', fontSize: '2.5rem', marginBottom:'10px'}}>{activeBook.title}</h1>
-                                <p style={{fontStyle:'italic', marginBottom:'30px'}}>সূচিপত্র (Index)</p>
-                                <div style={{textAlign:'left'}}>
-                                    {flipPages.map((page, idx) => (
-                                        <div key={page.id} className="flip-toc-item" onClick={() => setCurrentFlipIndex(idx + 1)}>
-                                            {idx + 1}. {page.title}
+                        <div className="flip-wrapper" style={{background: 'var(--bg-paper)'}}>
+                            <div className="flip-index-page">
+                                <h1 style={{color: 'var(--accent)'}}>{activeBook.title}</h1>
+                                <p>সূচিপত্র</p>
+                                <div className="index-list">
+                                    {activeBook.chapters.map((c, i) => (
+                                        <div key={c.id} className="index-item" onClick={() => { setIsIndexPage(false); loadChapter(activeBook, c); }}>
+                                            {i + 1}. {c.title}
                                         </div>
                                     ))}
                                 </div>
-                                <div className="page-number">Index Page</div>
-                            </div>
-                            <div className="flip-nav-overlay flip-nav-next" onClick={() => navigateFlip('next')}>
-                                <span className="material-icons nav-arrow">chevron_right</span>
                             </div>
                         </div>
                     );
                 }
 
-                // Content Pages (Page 1 to N)
-                const pageData = flipPages[currentFlipIndex - 1]; // -1 because index 0 is TOC
                 return (
-                    <div className="flip-container">
-                        <div className="flip-nav-overlay flip-nav-prev" onClick={() => navigateFlip('prev')}>
-                            <span className="material-icons nav-arrow">chevron_left</span>
-                        </div>
+                    <div className="flip-wrapper" 
+                         onTouchStart={handleTouchStart} 
+                         onTouchEnd={handleTouchEnd}>
                         
-                        <div className="flip-page" id="flip-content-area">
-                            <div style={{textAlign:'center', borderBottom:'1px solid #ccc', marginBottom:'20px', paddingBottom:'10px', fontSize:'12px', color:'#888'}}>
-                                {activeBook.title} &bull; {pageData.title}
+                        {/* Click Zones for Desktop */}
+                        <div className="click-zone zone-prev" onClick={() => handleFlipTurn('prev')}></div>
+                        <div className="click-zone zone-next" onClick={() => handleFlipTurn('next')}></div>
+
+                        <div className="paginated-container" ref={contentRef}
+                             style={{
+                                 // Shift the container left by (Page Width * Current Page)
+                                 transform: `translateX(calc(-100vw * ${flipCurrentPage} - ${flipCurrentPage * 40}px))`, 
+                                 width: '100vw' 
+                             }}>
+                            <div className="paginated-content" style={{
+                                columnWidth: 'calc(100vw - 40px)', // Force content into columns equal to screen width
+                                height: '100%'
+                            }}>
+                                <h2 style={{textAlign:'center', borderBottom:'1px solid #ccc', paddingBottom:10}}>{activeChapter?.title}</h2>
+                                <MarkdownViewer content={mdContent} fontSize={fontSize} />
+                                <div style={{height:'100px'}}></div> {/* Spacer for last page */}
                             </div>
-                            <MarkdownViewer content={pageData.content} fontSize={fontSize} />
-                            <div className="page-number">Page {currentFlipIndex} of {flipPages.length}</div>
                         </div>
 
-                        <div className="flip-nav-overlay flip-nav-next" onClick={() => navigateFlip('next')}>
-                            {currentFlipIndex < flipPages.length && <span className="material-icons nav-arrow">chevron_right</span>}
+                        <div className="flip-footer">
+                            Page {flipCurrentPage + 1} of {flipTotalPages}
                         </div>
                     </div>
                 );
             };
 
-            const ScrollReaderView = () => (
-                <div className="reader-wrapper">
-                    {/* Sidebar only visible on desktop via CSS */}
+            const ScrollView = () => (
+                <div className="scroll-mode-wrapper">
                     <Sidebar />
-                    
-                    <div className="reader-area" id="main-reader">
+                    <div className="scroll-reader-area" id="scroll-reader">
                         <div className="book-sheet">
-                            <div style={{textAlign:'center', fontSize:'12px', textTransform:'uppercase', letterSpacing:'2px', marginBottom:'30px', opacity:0.6, borderBottom:'1px solid rgba(0,0,0,0.1)', paddingBottom:'10px'}}>{activeBook ? activeBook.title : ''}</div>
+                            <h4 style={{textAlign:'center', opacity:0.5}}>{activeBook?.title}</h4>
                             <MarkdownViewer content={mdContent} fontSize={fontSize} />
-                            
-                            <div className="chapter-nav no-print">
-                                <button className="nav-btn" 
+                            <div style={{display:'flex', justifyContent:'space-between', marginTop:40}}>
+                                <button className="btn" style={{border:'1px solid', borderRadius:4}} 
                                     onClick={() => {
-                                        const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
-                                        if(idx > 0) loadChapter(activeBook, activeBook.chapters[idx-1]);
-                                    }} 
-                                    disabled={!activeBook || activeBook.chapters.findIndex(c => c.id === activeChapter?.id) <= 0}>
-                                    <span className="material-icons">west</span> আগের
-                                </button>
-                                <button className="nav-btn" 
+                                        const i = activeBook.chapters.findIndex(c=>c.id===activeChapter.id);
+                                        if(i>0) loadChapter(activeBook, activeBook.chapters[i-1]);
+                                    }}>Prev Chapter</button>
+                                <button className="btn" style={{border:'1px solid', borderRadius:4}} 
                                     onClick={() => {
-                                        const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
-                                        if(idx < activeBook.chapters.length - 1) loadChapter(activeBook, activeBook.chapters[idx+1]);
-                                    }}
-                                    disabled={!activeBook || activeBook.chapters.findIndex(c => c.id === activeChapter?.id) >= activeBook.chapters.length - 1} 
-                                    style={{background: 'var(--text-main)', color: 'var(--bg-paper)'}}>
-                                    পরের <span className="material-icons">east</span>
-                                </button>
+                                        const i = activeBook.chapters.findIndex(c=>c.id===activeChapter.id);
+                                        if(i<activeBook.chapters.length-1) loadChapter(activeBook, activeBook.chapters[i+1]);
+                                    }}>Next Chapter</button>
                             </div>
                         </div>
                     </div>
@@ -414,12 +427,13 @@
             );
 
             const HomeView = () => (
-                <div className="reader-area">
-                    <div className="book-sheet" style={{textAlign:'center', display:'flex', flexDirection:'column', justifyContent:'center', minHeight:'60vh', paddingBottom:'50px'}}>
-                        <h1 style={{fontSize:'clamp(2rem, 5vw, 3rem)', color:'var(--accent)', marginBottom:'10px'}}>GPT Library</h1>
-                        <div className="book-grid">
+                <div className="scroll-reader-area">
+                    <div className="book-sheet" style={{textAlign:'center', display:'flex', flexDirection:'column', justifyContent:'center'}}>
+                        <h1 style={{color: 'var(--accent)'}}>GPT Library</h1>
+                        <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px,1fr))', gap:20, marginTop:40}}>
                             {books.map(b => (
-                                <div key={b.id} className="book-card" onClick={() => { setActiveBook(b); loadChapter(b, b.chapters[0]); setViewMode('read'); }}>
+                                <div key={b.id} style={{padding:20, border:'1px solid #ddd', borderRadius:8, cursor:'pointer'}}
+                                     onClick={() => { setActiveBook(b); loadChapter(b, b.chapters[0]); setViewMode('read'); }}>
                                     <h3>{b.title}</h3>
                                     <p>{b.chapters.length} Chapters</p>
                                 </div>
@@ -430,7 +444,7 @@
             );
 
             // Utils
-            const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(''), 2500); };
+            const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(''), 2000); };
             const cycleTheme = () => setTheme(t => t==='white'?'sepia':t==='sepia'?'black':'white');
 
             return (
@@ -441,29 +455,29 @@
                     {viewMode === 'home' && <HomeView />}
                     
                     {viewMode === 'read' && (
-                        readingSystem === 'scroll' ? <ScrollReaderView /> : <FlipBookView />
+                        readingSystem === 'scroll' ? <ScrollView /> : <FlipView />
                     )}
 
-                    {/* Controls */}
+                    {/* Bottom Controls */}
                     <div className="controls no-print">
-                        <button className="btn" onClick={() => { setViewMode('home'); setActiveBook(null); }} title="হোম"><span className="material-icons">home</span></button>
+                        <button className="btn" onClick={() => { setViewMode('home'); setActiveBook(null); }}><span className="material-icons">home</span></button>
                         <div className="v-sep"></div>
                         
-                        {/* Mode Switcher */}
                         {viewMode === 'read' && (
                             <>
-                                <button className={`btn ${readingSystem === 'scroll' ? 'active-mode' : ''}`} onClick={() => readingSystem !== 'scroll' && toggleReadingSystem()} title="স্ক্রল মোড">
+                                <button className={`btn ${readingSystem === 'scroll' ? 'active-mode' : ''}`} onClick={() => readingSystem !== 'scroll' && toggleReadingSystem()}>
                                     <span className="material-icons">article</span>
                                 </button>
-                                <button className={`btn ${readingSystem === 'flip' ? 'active-mode' : ''}`} onClick={() => readingSystem !== 'flip' && toggleReadingSystem()} title="ফ্লিপবুক মোড">
+                                <button className={`btn ${readingSystem === 'flip' ? 'active-mode' : ''}`} onClick={() => readingSystem !== 'flip' && toggleReadingSystem()}>
                                     <span className="material-icons">auto_stories</span>
                                 </button>
                                 <div className="v-sep"></div>
+                                <button className="btn" onClick={() => setFontSize(f => f - 2)}><span style={{fontSize:14, fontWeight:'bold'}}>A-</span></button>
+                                <button className="btn" onClick={() => setFontSize(f => f + 2)}><span style={{fontSize:14, fontWeight:'bold'}}>A+</span></button>
+                                <div className="v-sep"></div>
                             </>
                         )}
-                        
-                        {viewMode === 'read' && <><button className="btn" onClick={() => setFontSize(f=>f-2)}><span className="btn-text">A-</span></button><button className="btn" onClick={() => setFontSize(f=>f+2)}><span className="btn-text">A+</span></button><div className="v-sep"></div></>}
-                        <button className="btn" onClick={cycleTheme}><span className="material-icons">{theme === 'white' ? 'brightness_5' : 'dark_mode'}</span></button>
+                        <button className="btn" onClick={cycleTheme}><span className="material-icons">{theme==='white'?'brightness_5':'dark_mode'}</span></button>
                     </div>
                 </div>
             );

@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GPT E-Book Library</title>
+    <title>GPT E-Book Library (Flip Edition)</title>
     <meta name="theme-color" id="theme-color" content="#4285f4" />
 
     <!-- KaTeX CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css">
     
     <!-- React Libraries -->
-    <script crossorigin src="react.development.js"></script>
-    <script crossorigin src="react-dom.development.js"></script>
-    <script src="babel.min.js"></script>
-    <script src="marked.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    <!-- KaTeX JS -->
+    <!-- KaTeX JS & Auto-Render Extension -->
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/contrib/auto-render.min.js"></script>
 
@@ -36,106 +36,121 @@
             --highlight: #ffeeba;       
             --shadow: 0 5px 20px rgba(0,0,0,0.15);
             --safe-bottom: 80px; 
-            --sidebar-width: 280px;
+            
+            /* Flipbook Variables */
+            --book-width: 400px;
+            --book-height: 600px;
+            --flip-speed: 0.8s;
         }
 
-        body.theme-white { --bg-body: #f0f2f5; --bg-paper: #ffffff; --text-main: #2c2c2c; --border-color: #ddd; }
-        body.theme-sepia { --bg-body: #f4ecd8; --bg-paper: #fdf6e3; --text-main: #5b4636; --border-color: #d3c0a5; --accent: #a0522d; --highlight: #ffdfba; }
+        /* থিমস */
+        body.theme-white { --bg-body: #f0f2f5; --bg-paper: #ffffff; --text-main: #2c2c2c; --border-color: #333; }
+        body.theme-sepia { --bg-body: #f4ecd8; --bg-paper: #fdf6e3; --text-main: #5b4636; --border-color: #8b7355; --accent: #a0522d; --highlight: #ffdfba; }
         body.theme-black { --bg-body: #121212; --bg-paper: #1e1e1e; --text-main: #d1d1d1; --border-color: #444; --accent: #ff6b6b; --shadow: 0 5px 20px rgba(0,0,0,0.5); --highlight: #4a4a4a; }
 
-        html { width: 100%; height: 100%; overflow: hidden; }
+        html { width: 100%; height: 100%; }
         body { 
             margin: 0; padding: 0; width: 100%; height: 100%;
             background-color: var(--bg-body); color: var(--text-main); 
-            font-family: 'Crimson Text', serif;
+            font-family: 'Crimson Text', serif; overflow: hidden; 
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
-        .app-container { display: flex; flex-direction: column; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; }
-        
-        /* Sidebar (Desktop Only) */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--bg-paper);
-            border-right: 1px solid var(--border-color);
-            overflow-y: auto;
-            display: none;
-            flex-direction: column;
-            z-index: 100;
-            height: 100%;
-        }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border-color); font-weight: bold; font-family: 'Lato', sans-serif; color: var(--accent); }
-        .sidebar-item { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 15px; transition: 0.2s; }
-        .sidebar-item:hover { background: rgba(0,0,0,0.05); }
-        .sidebar-item.active { background: var(--accent); color: #fff; }
+        .app-container { display: flex; flex-direction: column; width: 100%; height: 100vh; height: 100dvh; background-color: var(--bg-body); }
+        .reader-area { flex: 1; overflow-y: auto; padding: 20px; scroll-behavior: smooth; display: flex; justify-content: center; background-color: var(--bg-body); position: relative; }
 
-        /* SCROLL MODE STYLES */
-        .scroll-mode-wrapper { display: flex; flex: 1; overflow: hidden; width: 100%; max-width: 1400px; margin: 0 auto; }
-        .scroll-reader-area { flex: 1; overflow-y: auto; padding: 20px; scroll-behavior: smooth; display: flex; justify-content: center; position: relative; }
-        
-        @media (min-width: 992px) { .sidebar { display: flex; } }
-
+        /* --- Scroll View Styles --- */
         .book-sheet {
             background-color: var(--bg-paper); color: var(--text-main);
             width: 100%; max-width: 800px; min-height: 100%; height: fit-content;
-            padding: 60px 50px; padding-bottom: 100px;
-            box-shadow: var(--shadow); border-radius: 4px;
+            padding: 60px 50px; padding-bottom: var(--safe-bottom);
+            box-shadow: var(--shadow); margin-bottom: 20px; border-radius: 4px; position: relative;
         }
 
-        /* --- FLIPBOOK / PAGINATED MODE STYLES (New) --- */
-        .flip-wrapper {
-            flex: 1; width: 100%; height: 100%; 
-            display: flex; justify-content: center; align-items: center; 
-            overflow: hidden; perspective: 1000px;
-            position: relative;
+        /* --- FLIPBOOK 3D STYLES (NEW FEATURE) --- */
+        .scene {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: calc(var(--book-width) * 2); height: var(--book-height);
+            perspective: 2000px;
+            display: flex; justify-content: center; align-items: center;
         }
         
-        /* The Pagination Container using CSS Columns */
-        .paginated-container {
-            width: 100%; height: 100%;
-            padding: 40px 20px; /* Padding creates margins */
-            padding-bottom: 80px;
-            column-width: 100vw; /* Trick to force one page per screen width */
-            column-gap: 40px;
-            column-fill: auto;
-            height: calc(100vh - 80px); /* Adjust based on header/footer */
-            overflow-y: hidden; /* Hide vertical scroll */
-            overflow-x: hidden; /* We manage horizontal scroll manually */
-            
-            /* Positioning for the slide effect */
-            transform: translateX(0);
-            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s;
+        .book-3d {
+            position: relative; width: 100%; height: 100%;
+            transform-style: preserve-3d;
         }
 
-        /* Adjust content for pagination */
-        .paginated-content {
-            font-size: 1.1em;
-            text-align: justify;
-        }
-        .paginated-content p, .paginated-content h1, .paginated-content h2, .paginated-content img, .paginated-content pre {
-            break-inside: avoid; /* Prevent splitting elements across columns */
-            page-break-inside: avoid;
-            max-width: 100%;
-        }
-        .paginated-content img { max-height: 80vh; width: auto; display: block; margin: 0 auto; }
-
-        /* Animation classes */
-        .page-turning { opacity: 0.5; transform-origin: left center; transform: rotateY(-10deg); }
-
-        /* Footer in Flip Mode */
-        .flip-footer {
-            position: absolute; bottom: 15px; width: 100%; text-align: center;
-            font-size: 12px; opacity: 0.6; z-index: 200; pointer-events: none;
-            font-family: 'Lato', sans-serif;
+        .paper-3d {
+            position: absolute; width: var(--book-width); height: 100%;
+            top: 0; left: var(--book-width); /* Initially on right */
+            transform-origin: left;
+            transition: transform var(--flip-speed) cubic-bezier(0.645, 0.045, 0.355, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
         }
 
-        /* Click Zones for Desktop */
-        .click-zone { position: absolute; top: 0; bottom: 60px; width: 15%; z-index: 50; cursor: pointer; }
-        .zone-prev { left: 0; }
-        .zone-next { right: 0; }
-        .zone-prev:hover { background: linear-gradient(to right, rgba(0,0,0,0.05), transparent); }
-        .zone-next:hover { background: linear-gradient(to left, rgba(0,0,0,0.05), transparent); }
+        .paper-content {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            background-color: var(--bg-paper);
+            color: var(--text-main);
+            backface-visibility: hidden;
+            padding: 40px 30px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.1);
+            display: flex; flex-direction: column;
+        }
+        
+        .paper-content.front { z-index: 2; }
+        /* Gradient Shadow for realism */
+        .paper-content.front::after {
+            content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 30px;
+            background: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.1)); pointer-events: none;
+        }
+        
+        .paper-content.back {
+            z-index: 1; transform: rotateY(180deg);
+            border-left: none; border-right: 1px solid rgba(0,0,0,0.1);
+        }
+        .paper-content.back::after {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 30px;
+            background: linear-gradient(to left, rgba(0,0,0,0), rgba(0,0,0,0.1)); pointer-events: none;
+        }
 
-        /* --- Shared Styles --- */
+        .paper-3d.flipped { transform: rotateY(-180deg); }
+
+        /* Mobile Flip Adjustments */
+        @media (max-width: 850px) {
+            :root { --book-width: 92vw; --book-height: 80vh; }
+            .scene { width: 100%; perspective: 1500px; overflow: hidden; }
+            .paper-3d { left: 4vw; } /* Center somewhat */
+            /* In mobile, we might just stack or slide, but for flip effect we keep it.
+               To make it readable on mobile, the book centers differently when open. */
+            .book-3d.mobile-view .paper-3d { left: 50%; transform: translateX(-50%); transform-origin: center; }
+            .book-3d.mobile-view .paper-3d.flipped { transform: translateX(-50%) rotateY(-180deg); display:none; } /* Simple hide for mobile complex flip */
+            /* Better Mobile Approach: Just use single page flip or keep side origin but shift scene */
+             .scene { justify-content: flex-start; }
+        }
+
+        .page-number { position: absolute; bottom: 15px; width: 100%; text-align: center; font-size: 12px; opacity: 0.6; left:0; }
+
+        /* --- Rest of Styles --- */
+        @media (max-width: 768px) {
+            .reader-area { padding: 0; }
+            .book-sheet { max-width: 100%; padding: 30px 20px; padding-bottom: 120px; box-shadow: none; margin-bottom: 0; border-radius: 0; }
+        }
+
+        .markdown-body { line-height: 1.6; }
+        .markdown-body h1 { text-align: center; color: var(--text-main); padding-bottom: 15px; margin-top: 0; text-transform: uppercase; font-weight: 700; }
+        .markdown-body p { margin-bottom: 1.2em; text-align: justify; }
+        .markdown-body img { max-width: 100%; height: auto; display: block; margin: 15px auto; border-radius: 4px; }
+        .katex { font-size: 1.1em; color: var(--text-main); }
+        
+        .chapter-nav { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); gap: 10px; }
+        .nav-btn { background: transparent; border: 1px solid var(--text-main); color: var(--text-main); padding: 10px 15px; border-radius: 4px; cursor: pointer; font-family: 'Crimson Text', serif; font-weight: bold; display: flex; align-items: center; gap: 5px; transition: 0.2s; flex: 1; justify-content: center; }
+        .nav-btn:active { background: rgba(0,0,0,0.1); }
+        .nav-btn:disabled { opacity: 0.3; pointer-events: none; border-style: dashed; }
+
+        /* Controls */
         .controls {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             background: var(--bg-paper); padding: 10px 20px; border-radius: 50px;
@@ -143,38 +158,66 @@
             border: 1px solid var(--border-color); align-items: center;
             max-width: 95%; overflow-x: auto;
         }
-        .btn { background: none; border: none; cursor: pointer; color: var(--text-main); padding: 8px; border-radius: 50%; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+        .btn { background: none; border: none; cursor: pointer; color: var(--text-main); display: flex; align-items: center; justify-content: center; padding: 8px; border-radius: 50%; transition: 0.2s; min-width: 44px; min-height: 44px; }
         .btn:hover { background: rgba(0,0,0,0.08); }
-        .btn.active-mode { background: var(--accent); color: white; }
-        .v-sep { width: 1px; height: 24px; background: var(--text-main); opacity: 0.2; }
-        .loader { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.8); color: white; padding: 15px 30px; border-radius: 30px; z-index: 3000; }
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 24px; border-radius: 30px; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 5000; }
+        .btn:active { transform: scale(0.95); }
+        .btn.active-mode { background: var(--text-main); color: var(--bg-paper); }
+        .btn-text { font-weight: bold; font-family: sans-serif; font-size: 15px; }
+        .v-sep { width: 1px; height: 24px; background: var(--text-main); opacity: 0.2; flex-shrink: 0; }
+
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 24px; border-radius: 30px; font-size: 14px; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 5000; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(10px); }
 
-        /* Index Page for Flip Mode */
-        .flip-index-page {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100%; text-align: center; padding: 20px; overflow-y: auto;
-        }
-        .index-list { width: 100%; max-width: 500px; text-align: left; margin-top: 20px; max-height: 60vh; overflow-y: auto; }
-        .index-item { padding: 15px; border-bottom: 1px dashed var(--border-color); cursor: pointer; }
-        .index-item:hover { color: var(--accent); background: rgba(0,0,0,0.05); }
+        /* Others */
+        .book-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; padding: 10px; }
+        .book-card { background: var(--bg-paper); padding: 25px; border-radius: 8px; cursor: pointer; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: 0.3s; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+        .book-card:hover { transform: translateY(-5px); border-color: var(--accent); }
 
-        /* Common Markdown Styles */
-        .markdown-body { line-height: 1.6; }
-        .markdown-body h1 { text-align: center; margin-top: 0; text-transform: uppercase; }
-        .katex { font-size: 1.1em; color: var(--text-main); }
-        table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.85em; }
-        table th { background: var(--accent); color: #fff; padding: 8px; }
-        table td { border-bottom: 1px solid rgba(0,0,0,0.1); padding: 8px; }
-        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; border-radius: 4px; }
-        
-        /* Mobile Adjustments */
-        @media (max-width: 768px) {
-            .paginated-container { padding: 30px 15px; column-gap: 30px; }
-            .book-sheet { padding: 30px 20px; padding-bottom: 100px; border-radius: 0; box-shadow: none; }
-            .click-zone { display: none; } /* Mobile uses swipe only */
+        /* Search Modal */
+        .search-box { background: var(--bg-paper); color: var(--text-main); width: 95%; max-width: 600px; height: 80vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .search-header { padding: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; gap: 10px; align-items: center; }
+        .search-input { flex: 1; padding: 12px; font-size: 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 8px; background: transparent; color: var(--text-main); font-family: 'Lato', sans-serif; }
+        .search-input:focus { outline: none; border-color: var(--accent); }
+        .search-tabs { display: flex; border-bottom: 1px solid rgba(0,0,0,0.1); background: rgba(0,0,0,0.02); }
+        .tab-btn { flex: 1; padding: 12px; background: none; border: none; cursor: pointer; font-weight: bold; color: var(--text-main); opacity: 0.6; border-bottom: 3px solid transparent; transition: 0.2s; }
+        .tab-btn.active { opacity: 1; border-bottom-color: var(--accent); background: rgba(0,0,0,0.05); }
+        .search-results { flex: 1; overflow-y: auto; padding: 0; }
+        .result-item { padding: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s; }
+        .result-item:hover { background: rgba(0,0,0,0.03); }
+        .res-title { font-weight: bold; font-size: 16px; display: block; margin-bottom: 4px; color: var(--accent); }
+        .res-sub { font-size: 13px; opacity: 0.7; display: block; margin-bottom: 6px; }
+        .res-snippet { font-size: 14px; font-family: 'Crimson Text', serif; display: block; line-height: 1.4; color: var(--text-main); }
+        .highlight { background-color: var(--highlight); padding: 0 2px; border-radius: 2px; font-weight: bold; color: #000; }
+        .empty-state { padding: 40px; text-align: center; opacity: 0.6; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
+        .modal-box { background: var(--bg-paper); color: var(--text-main); width: 90%; max-width: 400px; max-height: 70vh; border-radius: 8px; padding: 25px; display: flex; flex-direction: column; }
+        .chapter-list { overflow-y: auto; flex: 1; margin: 15px 0; border: 1px solid rgba(0,0,0,0.1); padding: 5px; border-radius: 4px; }
+        .checkbox-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer; }
+        .checkbox-item:hover { background: rgba(0,0,0,0.03); }
+        .action-btn { background: var(--text-main); color: var(--bg-paper); border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 15px; width: 100%; font-weight: bold; margin-top: 5px; }
+
+        @media print {
+            .controls, .no-print, .chapter-nav { display: none !important; }
+            .reader-area { padding: 0; overflow: visible; display: block; }
+            .book-sheet { box-shadow: none; padding: 0; margin: 0; max-width: 100%; }
         }
+        .loader { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.8); color: white; padding: 15px 30px; border-radius: 30px; z-index: 3000; font-family: sans-serif; }
+       
+        pre { background-color: #f5f5f5; border: 1px solid #e1e1e1; border-radius: 4px; padding: 16px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 14px; line-height: 1.5; color: #333; }
+        code { background-color: #eaeaea; padding: 2px 4px; border-radius: 3px; font-family: inherit; color: #c7254e; }
+        pre code { display: block; white-space: pre; word-wrap: normal; }
+
+        table { width: 100%; border-collapse: collapse; margin: 25px 0; font-size: 12px; font-family: 'Lato', sans-serif; box-shadow: 0 0 20px rgba(0, 0, 0, 0.05); overflow: hidden; border-radius: 8px; }
+        table th { background-color: var(--accent); color: #ffffff; text-align: left; font-weight: bold; padding: 12px 15px; text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.05em; }
+        table td { padding: 12px 15px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        table tr:nth-of-type(even) { background-color: rgba(0, 0, 0, 0.03); }
+        table tr:last-of-type td { border-bottom: 2px solid var(--accent); }
+        table tr:hover { background-color: rgba(0, 0, 0, 0.07); transition: background-color 0.2s ease; }
+        body.theme-black table tr:nth-of-type(even) { background-color: rgba(255, 255, 255, 0.05); }
+        body.theme-black table td { border-bottom: 1px solid rgba(255,255,255,0.1); }
+        body.theme-black table tr:hover { background-color: rgba(255, 255, 255, 0.1); }
+        .markdown-body table { display: block; width: 100%; overflow-x: auto; white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -182,12 +225,37 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef, useLayoutEffect } = React;
+        const { useState, useEffect, useRef, useMemo } = React;
 
-        // --- Markdown & KaTeX Component ---
-        const MarkdownViewer = ({ content, fontSize, className }) => {
+        // --- UTILS: Pagination Logic ---
+        // Splits markdown string into approximate pages for the flipbook
+        const splitContentIntoPages = (text, charsPerPage = 1200) => {
+            if (!text) return [];
+            const paragraphs = text.split('\n');
+            const pages = [];
+            let currentPage = "";
+
+            paragraphs.forEach(p => {
+                // If adding this paragraph exceeds limit, push page and start new
+                if (currentPage.length + p.length > charsPerPage && currentPage.length > 200) {
+                    pages.push(currentPage);
+                    currentPage = p + '\n';
+                } else {
+                    currentPage += p + '\n';
+                }
+            });
+            if (currentPage) pages.push(currentPage);
+            
+            // Adjust to ensure we have pairs for Front/Back (optional but good for visuals)
+            // Flipbook logic handles dynamic length, so array of strings is fine.
+            return pages;
+        };
+
+        // --- COMPONENT: Markdown Viewer ---
+        const MarkdownViewer = ({ content, fontSize, style }) => {
             const rootRef = useRef();
             const html = marked.parse(content || '');
+
             useEffect(() => {
                 if (rootRef.current && window.renderMathInElement) {
                     window.renderMathInElement(rootRef.current, {
@@ -196,246 +264,304 @@
                             {left: '$', right: '$', display: false},
                             {left: '\\(', right: '\\)', display: false},
                             {left: '\\[', right: '\\]', display: true}
-                        ], throwOnError: false
+                        ],
+                        throwOnError: false
                     });
                 }
             }, [content]);
-            return <div ref={rootRef} className={`markdown-body ${className || ''}`} style={{ fontSize: `${fontSize}px` }} dangerouslySetInnerHTML={{ __html: html }} />;
+
+            return (
+                <div 
+                    ref={rootRef}
+                    className="markdown-body" 
+                    style={{ fontSize: `${fontSize}px`, ...style }} 
+                    dangerouslySetInnerHTML={{ __html: html }} 
+                />
+            );
         };
 
+        // --- COMPONENT: FlipBook Viewer (The New Feature) ---
+        const FlipBookViewer = ({ content, fontSize, onPrevChap, onNextChap }) => {
+            // Paginate content
+            const pagesContent = useMemo(() => splitContentIntoPages(content, 1100), [content]);
+            
+            // We need to group content into "Papers" (Front + Back)
+            // Paper 1: Page 0 (Front), Page 1 (Back)
+            // Paper 2: Page 2 (Front), Page 3 (Back)
+            const papers = useMemo(() => {
+                let p = [];
+                for(let i=0; i < pagesContent.length; i+=2) {
+                    p.push({
+                        front: pagesContent[i],
+                        back: pagesContent[i+1] || "..." // Empty if odd number
+                    });
+                }
+                return p;
+            }, [pagesContent]);
+
+            const [currentLocation, setCurrentLocation] = useState(1); // 1 means first paper is closed (cover state)
+            const totalPapers = papers.length;
+            const maxLocation = totalPapers + 1;
+
+            const goNext = () => {
+                if (currentLocation < maxLocation) setCurrentLocation(prev => prev + 1);
+                else onNextChap && onNextChap();
+            };
+
+            const goPrev = () => {
+                if (currentLocation > 1) setCurrentLocation(prev => prev - 1);
+                else onPrevChap && onPrevChap();
+            };
+
+            // Keyboard navigation
+            useEffect(() => {
+                const handleKey = (e) => {
+                    if(e.key === 'ArrowRight') goNext();
+                    if(e.key === 'ArrowLeft') goPrev();
+                };
+                window.addEventListener('keydown', handleKey);
+                return () => window.removeEventListener('keydown', handleKey);
+            }, [currentLocation]);
+
+            const isMobile = window.innerWidth < 768;
+
+            return (
+                <div className="scene" style={{marginTop: isMobile ? '0' : '0'}}>
+                    <div className="book-3d" style={{ transform: (currentLocation > 1 && !isMobile) ? 'translateX(50%)' : 'translateX(0%)', transition: 'transform 0.5s' }}>
+                        {papers.map((paper, index) => {
+                            const paperNum = index + 1; // 1-based index for logic
+                            const isFlipped = currentLocation > paperNum;
+                            
+                            // Z-Index Logic (Crucial for 3D effect)
+                            let zIndex = 0;
+                            if (isFlipped) {
+                                zIndex = paperNum; // Lower papers stack up
+                            } else {
+                                zIndex = totalPapers - index + 1; // Higher papers on top
+                            }
+
+                            return (
+                                <div 
+                                    key={index}
+                                    className={`paper-3d ${isFlipped ? 'flipped' : ''}`}
+                                    style={{ zIndex: zIndex }}
+                                    onClick={() => isFlipped ? goPrev() : goNext()}
+                                >
+                                    <div className="paper-content front">
+                                        <MarkdownViewer content={paper.front} fontSize={fontSize - 2} style={{height:'100%', overflow:'hidden'}} />
+                                        <div className="page-number">{index * 2 + 1}</div>
+                                    </div>
+                                    <div className="paper-content back">
+                                        <MarkdownViewer content={paper.back} fontSize={fontSize - 2} style={{height:'100%', overflow:'hidden'}} />
+                                        <div className="page-number">{index * 2 + 2}</div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    {/* Invisible Overlay Controls for easier tapping on mobile edge */}
+                    {isMobile && <div style={{position:'absolute', left:0, top:0, width:'30%', height:'100%', zIndex:100}} onClick={(e)=>{e.stopPropagation(); goPrev();}}></div>}
+                    {isMobile && <div style={{position:'absolute', right:0, top:0, width:'30%', height:'100%', zIndex:100}} onClick={(e)=>{e.stopPropagation(); goNext();}}></div>}
+                </div>
+            );
+        };
+
+
+        // --- MAIN APP COMPONENT ---
         function App() {
-            // Data & View State
+            // Main States
             const [books, setBooks] = useState([]);
             const [activeBook, setActiveBook] = useState(null);
             const [activeChapter, setActiveChapter] = useState(null);
             const [mdContent, setMdContent] = useState('');
-            const [viewMode, setViewMode] = useState('home'); // home, read
-            const [readingSystem, setReadingSystem] = useState('scroll'); // scroll, flip
-            
-            // Settings
-            const [theme, setTheme] = useState('white');
+            const [viewMode, setViewMode] = useState('home'); 
+            const [theme, setTheme] = useState('white'); 
             const [fontSize, setFontSize] = useState(19);
             const [loading, setLoading] = useState(false);
             const [toastMsg, setToastMsg] = useState('');
+            
+            // Reading Mode State: 'scroll' or 'flip'
+            const [readingMode, setReadingMode] = useState('scroll');
 
-            // Search (Simplified for this snippet)
+            // Search States
             const [showSearch, setShowSearch] = useState(false);
+            const [searchQuery, setSearchQuery] = useState('');
+            const [searchTab, setSearchTab] = useState('content'); 
+            const [indexedContent, setIndexedContent] = useState([]);
+            const [isIndexing, setIsIndexing] = useState(false);
 
-            // --- Flip Mode Specific States ---
-            const [flipCurrentPage, setFlipCurrentPage] = useState(0); // 0 = start of chapter
-            const [flipTotalPages, setFlipTotalPages] = useState(1);
-            const contentRef = useRef(null); // Reference to the paginated column container
-            const [isIndexPage, setIsIndexPage] = useState(false); // True if showing Book Index in flip mode
+            // Print States
+            const [showPrintModal, setShowPrintModal] = useState(false);
+            const [selectedChapters, setSelectedChapters] = useState([]);
+            const [printContent, setPrintContent] = useState([]); 
 
-            // Initial Load
             useEffect(() => {
-                fetch('books/db.json').then(res => res.json()).then(data => { setBooks(data); });
+                fetch('books/db.json')
+                    .then(res => res.json())
+                    .then(data => { 
+                        setBooks(data); 
+                        handleRouting(data);
+                        indexAllContent(data);
+                    })
+                    .catch(err => console.log("books.json not found - simulating for demo"));
             }, []);
+
+            useEffect(() => {
+                const listener = () => handleRouting(books);
+                window.addEventListener('popstate', listener);
+                return () => window.removeEventListener('popstate', listener);
+            }, [books]);
 
             useEffect(() => {
                 document.body.className = `theme-${theme}`;
                 const meta = document.getElementById("theme-color");
                 if (meta) meta.setAttribute("content", theme);
             }, [theme]);
+        
+            const handleRouting = (data) => {
+                if (!data || !data.length) return;
+                const hash = window.location.hash;
+                if (hash === '#search') { setShowSearch(true); setShowPrintModal(false); }
+                else if (hash === '#print') { setShowPrintModal(true); setShowSearch(false); }
+                else { setShowSearch(false); setShowPrintModal(false); }
 
-            // --- Navigation Logic ---
-            const loadChapter = async (book, chapter) => {
+                const params = new URLSearchParams(window.location.search);
+                const bId = params.get('book');
+                const cId = params.get('chapter');
+
+                if (bId) {
+                    const book = data.find(b => b.id === bId);
+                    if (book) {
+                        setActiveBook(book);
+                        if (cId) {
+                            const chap = book.chapters.find(c => c.id === cId);
+                            if (chap) { loadChapter(book, chap, false); return; }
+                        }
+                        setViewMode('index'); setActiveChapter(null);
+                    }
+                } else {
+                    setViewMode('home'); setActiveBook(null); setActiveChapter(null);
+                }
+            };
+
+            const navigateTo = (book, chapter, hash = null) => {
+                const url = new URL(window.location);
+                if (!book) { url.searchParams.delete('book'); url.searchParams.delete('chapter'); }
+                else { url.searchParams.set('book', book.id); if (chapter) url.searchParams.set('chapter', chapter.id); else url.searchParams.delete('chapter'); }
+                if (hash) url.hash = hash; else url.hash = '';
+                window.history.pushState({}, '', url);
+                handleRouting(books);
+            };
+
+            const openModal = (type) => {
+                const url = new URL(window.location); url.hash = type;
+                window.history.pushState({}, '', url); handleRouting(books);
+            };
+
+            const closeModal = () => { window.history.back(); };
+
+            const loadChapter = (book, chapter, push = true) => {
+                if (push) navigateTo(book, chapter);
                 setLoading(true);
-                setActiveBook(book);
-                setActiveChapter(chapter);
-                try {
-                    const res = await fetch(`${book.folder}/${chapter.file}`);
-                    const text = await res.text();
-                    setMdContent(text);
+                fetch(`${book.folder}/${chapter.file}`).then(res => res.text()).then(text => {
+                    setMdContent(text); setActiveBook(book); setActiveChapter(chapter); setViewMode('read');
                     setLoading(false);
-                    // Reset positions
-                    if (readingSystem === 'scroll') {
-                        const reader = document.getElementById('scroll-reader');
-                        if(reader) reader.scrollTop = 0;
-                    } else {
-                        setFlipCurrentPage(0); // Start at page 1 (index 0) of the new chapter
-                    }
-                } catch(e) {
-                    setMdContent("# Error Loading Chapter");
-                    setLoading(false);
-                }
+                    const reader = document.getElementById('main-reader'); if(reader) reader.scrollTop = 0;
+                }).catch(() => {
+                    setMdContent("# লোড এরর\nফাইল খুঁজে পাওয়া যায়নি।"); setLoading(false);
+                    setActiveBook(book); setActiveChapter(chapter); setViewMode('read');
+                });
             };
 
-            const toggleReadingSystem = () => {
-                const newSystem = readingSystem === 'scroll' ? 'flip' : 'scroll';
-                setReadingSystem(newSystem);
-                if (newSystem === 'flip') {
-                    // Go to Index page first when switching to Flip mode usually feels better
-                    setIsIndexPage(true);
+            const indexAllContent = async (bookList) => {
+                setIsIndexing(true);
+                const promises = [];
+                bookList.forEach(book => {
+                    book.chapters.forEach(chap => {
+                        promises.push(fetch(`${book.folder}/${chap.file}`).then(res => res.text()).then(text => ({
+                                    bookId: book.id, bookTitle: book.title, chapterId: chap.id, chapterTitle: chap.title, text: text, plainText: text.replace(/[#*_`]/g, '') 
+                                })).catch(e => null));
+                    });
+                });
+                try { const results = await Promise.all(promises); setIndexedContent(results.filter(r => r !== null)); } catch(e) { console.error(e); }
+                setIsIndexing(false);
+            };
+
+            const getSearchResults = () => {
+                if (!searchQuery.trim()) return [];
+                const q = searchQuery.toLowerCase();
+                if (searchTab === 'books') return books.filter(b => b.title.toLowerCase().includes(q));
+                else if (searchTab === 'chapters') {
+                    let chapters = [];
+                    books.forEach(b => { b.chapters.forEach(c => { if (c.title.toLowerCase().includes(q)) chapters.push({ ...c, bookTitle: b.title, bookId: b.id }); }); });
+                    return chapters;
                 } else {
-                    // Switch back to scroll mode with current chapter
-                    setIsIndexPage(false);
+                    return indexedContent.filter(item => item.plainText.toLowerCase().includes(q)).map(item => {
+                        const idx = item.plainText.toLowerCase().indexOf(q);
+                        const start = Math.max(0, idx - 40);
+                        const end = Math.min(item.plainText.length, idx + q.length + 60);
+                        const snippet = (start > 0 ? "..." : "") + item.plainText.substring(start, end) + (end < item.plainText.length ? "..." : "");
+                        return { ...item, snippet };
+                    });
                 }
             };
 
-            // --- FLIP MODE LOGIC (The Core Request) ---
+            const highlightText = (text, highlight) => {
+                if (!highlight.trim()) return text;
+                const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+                return <span>{parts.map((part, i) => part.toLowerCase() === highlight.toLowerCase() ? <span key={i} className="highlight">{part}</span> : part)}</span>;
+            };
+
+            const handleResultClick = (result) => {
+                window.history.back();
+                setTimeout(() => {
+                    const book = books.find(b => b.id === (result.bookId || result.id));
+                    if (searchTab === 'books') navigateTo(result, null);
+                    else if (searchTab === 'chapters') navigateTo(book, result);
+                    else { const chap = book.chapters.find(c => c.id === result.chapterId); navigateTo(book, chap); }
+                }, 50);
+            };
+
+            const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(''), 2500); };
+            const cycleTheme = () => setTheme(t => t==='white'?'sepia':t==='sepia'?'black':'white');
+            const increaseFont = () => setFontSize(prev => Math.min(prev + 2, 36));
+            const decreaseFont = () => setFontSize(prev => Math.max(prev - 2, 14));
             
-            // Calculate total pages when content or resize happens
-            useLayoutEffect(() => {
-                if (readingSystem === 'flip' && !isIndexPage && contentRef.current) {
-                    const { scrollWidth, clientWidth } = contentRef.current;
-                    // Total pages = Total scroll width / width of one "page" (screen)
-                    const pages = Math.ceil(scrollWidth / (clientWidth + 40)); // 40 is approximate gap
-                    setFlipTotalPages(Math.max(1, pages));
-                }
-            }, [mdContent, fontSize, readingSystem, isIndexPage, activeChapter]);
-
-            // Handle Page Turn in Flip Mode
-            const handleFlipTurn = (direction) => {
-                if (direction === 'next') {
-                    if (flipCurrentPage < flipTotalPages - 1) {
-                        setFlipCurrentPage(p => p + 1);
-                    } else {
-                        // End of chapter, ask to go to next chapter
-                        const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
-                        if (idx < activeBook.chapters.length - 1) {
-                            if(confirm("পরের অধ্যায়ে যাবেন?")) {
-                                loadChapter(activeBook, activeBook.chapters[idx + 1]);
-                            }
-                        } else {
-                            showToast("বই শেষ!");
-                        }
-                    }
-                } else {
-                    if (flipCurrentPage > 0) {
-                        setFlipCurrentPage(p => p - 1);
-                    } else {
-                        // Ask to go to index or prev chapter
-                        const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
-                        if (idx > 0) {
-                             if(confirm("আগের অধ্যায়ে যাবেন?")) {
-                                loadChapter(activeBook, activeBook.chapters[idx - 1]);
-                            }
-                        } else {
-                            setIsIndexPage(true); // Go back to TOC
-                        }
-                    }
-                }
+            const handleShare = async () => {
+                const url = window.location.href;
+                const title = activeBook ? `${activeBook.title}` : 'Digital E-book';
+                if (navigator.share) { try { await navigator.share({ title, url }); return; } catch (err) {} }
+                try { await navigator.clipboard.writeText(url); showToast('লিংক কপি করা হয়েছে!'); } catch (err) { showToast('কপি করতে সমস্যা হয়েছে!'); }
             };
 
-            // Touch Handling for Swipe
-            const touchStart = useRef(null);
-            const handleTouchStart = (e) => { touchStart.current = e.touches[0].clientX; };
-            const handleTouchEnd = (e) => {
-                if (!touchStart.current) return;
-                const touchEnd = e.changedTouches[0].clientX;
-                const diff = touchStart.current - touchEnd;
-                
-                // Swipe Threshold (e.g., 50px)
-                if (Math.abs(diff) > 50) {
-                    if (diff > 0) handleFlipTurn('next'); // Swipe Left -> Next
-                    else handleFlipTurn('prev'); // Swipe Right -> Prev
-                }
-                touchStart.current = null;
+            const navigateChapter = (direction) => {
+                if (!activeBook || !activeChapter) return;
+                const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
+                if (direction === 'next' && idx < activeBook.chapters.length - 1) loadChapter(activeBook, activeBook.chapters[idx + 1]);
+                else if (direction === 'prev' && idx > 0) loadChapter(activeBook, activeBook.chapters[idx - 1]);
             };
 
-            // --- COMPONENTS ---
-
-            const Sidebar = () => (
-                <div className="sidebar">
-                    <div className="sidebar-header">{activeBook?.title}</div>
-                    {activeBook?.chapters.map(c => (
-                        <div key={c.id} className={`sidebar-item ${activeChapter?.id === c.id ? 'active' : ''}`}
-                             onClick={() => {
-                                 if(readingSystem==='flip') { setIsIndexPage(false); loadChapter(activeBook, c); }
-                                 else loadChapter(activeBook, c);
-                             }}>
-                            {c.title}
+            const SearchModal = () => (
+                <div className="modal-overlay" onClick={(e) => { if(e.target.className==='modal-overlay') closeModal() }}>
+                    <div className="search-box">
+                        <div className="search-header">
+                            <span className="material-icons">search</span>
+                            <input className="search-input" placeholder="খুঁজুন..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} autoFocus />
+                            <button className="btn" onClick={closeModal}><span className="material-icons">close</span></button>
                         </div>
-                    ))}
-                </div>
-            );
-
-            const FlipView = () => {
-                if (isIndexPage) {
-                    return (
-                        <div className="flip-wrapper" style={{background: 'var(--bg-paper)'}}>
-                            <div className="flip-index-page">
-                                <h1 style={{color: 'var(--accent)'}}>{activeBook.title}</h1>
-                                <p>সূচিপত্র</p>
-                                <div className="index-list">
-                                    {activeBook.chapters.map((c, i) => (
-                                        <div key={c.id} className="index-item" onClick={() => { setIsIndexPage(false); loadChapter(activeBook, c); }}>
-                                            {i + 1}. {c.title}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+                        <div className="search-tabs">
+                            {['books', 'chapters', 'content'].map(t => (
+                                <button key={t} className={`tab-btn ${searchTab===t?'active':''}`} onClick={()=>setSearchTab(t)}>{t==='books'?'বই':t==='chapters'?'অধ্যায়':'কনটেন্ট'}</button>
+                            ))}
                         </div>
-                    );
-                }
-
-                return (
-                    <div className="flip-wrapper" 
-                         onTouchStart={handleTouchStart} 
-                         onTouchEnd={handleTouchEnd}>
-                        
-                        {/* Click Zones for Desktop */}
-                        <div className="click-zone zone-prev" onClick={() => handleFlipTurn('prev')}></div>
-                        <div className="click-zone zone-next" onClick={() => handleFlipTurn('next')}></div>
-
-                        <div className="paginated-container" ref={contentRef}
-                             style={{
-                                 // Shift the container left by (Page Width * Current Page)
-                                 transform: `translateX(calc(-100vw * ${flipCurrentPage} - ${flipCurrentPage * 40}px))`, 
-                                 width: '100vw' 
-                             }}>
-                            <div className="paginated-content" style={{
-                                columnWidth: 'calc(100vw - 40px)', // Force content into columns equal to screen width
-                                height: '100%'
-                            }}>
-                                <h2 style={{textAlign:'center', borderBottom:'1px solid #ccc', paddingBottom:10}}>{activeChapter?.title}</h2>
-                                <MarkdownViewer content={mdContent} fontSize={fontSize} />
-                                <div style={{height:'100px'}}></div> {/* Spacer for last page */}
-                            </div>
-                        </div>
-
-                        <div className="flip-footer">
-                            Page {flipCurrentPage + 1} of {flipTotalPages}
-                        </div>
-                    </div>
-                );
-            };
-
-            const ScrollView = () => (
-                <div className="scroll-mode-wrapper">
-                    <Sidebar />
-                    <div className="scroll-reader-area" id="scroll-reader">
-                        <div className="book-sheet">
-                            <h4 style={{textAlign:'center', opacity:0.5}}>{activeBook?.title}</h4>
-                            <MarkdownViewer content={mdContent} fontSize={fontSize} />
-                            <div style={{display:'flex', justifyContent:'space-between', marginTop:40}}>
-                                <button className="btn" style={{border:'1px solid', borderRadius:4}} 
-                                    onClick={() => {
-                                        const i = activeBook.chapters.findIndex(c=>c.id===activeChapter.id);
-                                        if(i>0) loadChapter(activeBook, activeBook.chapters[i-1]);
-                                    }}>Prev Chapter</button>
-                                <button className="btn" style={{border:'1px solid', borderRadius:4}} 
-                                    onClick={() => {
-                                        const i = activeBook.chapters.findIndex(c=>c.id===activeChapter.id);
-                                        if(i<activeBook.chapters.length-1) loadChapter(activeBook, activeBook.chapters[i+1]);
-                                    }}>Next Chapter</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-
-            const HomeView = () => (
-                <div className="scroll-reader-area">
-                    <div className="book-sheet" style={{textAlign:'center', display:'flex', flexDirection:'column', justifyContent:'center'}}>
-                        <h1 style={{color: 'var(--accent)'}}>GPT Library</h1>
-                        <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px,1fr))', gap:20, marginTop:40}}>
-                            {books.map(b => (
-                                <div key={b.id} style={{padding:20, border:'1px solid #ddd', borderRadius:8, cursor:'pointer'}}
-                                     onClick={() => { setActiveBook(b); loadChapter(b, b.chapters[0]); setViewMode('read'); }}>
-                                    <h3>{b.title}</h3>
-                                    <p>{b.chapters.length} Chapters</p>
+                        <div className="search-results">
+                            {isIndexing && searchTab === 'content' && indexedContent.length === 0 && <div className="empty-state">ইনডেক্সিং চলছে...</div>}
+                            {searchQuery && getSearchResults().length === 0 && <div className="empty-state">ফলাফল নেই</div>}
+                            {getSearchResults().map((item, idx) => (
+                                <div key={idx} className="result-item" onClick={() => handleResultClick(item)}>
+                                    {searchTab === 'books' && (<><span className="res-title">{highlightText(item.title, searchQuery)}</span><span className="res-sub">{item.chapters.length} টি অধ্যায়</span></>)}
+                                    {searchTab === 'chapters' && (<><span className="res-title">{highlightText(item.title, searchQuery)}</span><span className="res-sub">বই: {item.bookTitle}</span></>)}
+                                    {searchTab === 'content' && (<><span className="res-title">{item.chapterTitle}</span><span className="res-sub">বই: {item.bookTitle}</span><span className="res-snippet">{highlightText(item.snippet, searchQuery)}</span></>)}
                                 </div>
                             ))}
                         </div>
@@ -443,41 +569,151 @@
                 </div>
             );
 
-            // Utils
-            const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(''), 2000); };
-            const cycleTheme = () => setTheme(t => t==='white'?'sepia':t==='sepia'?'black':'white');
+            const HomeView = () => (
+                <div className="reader-area">
+                    <div className="book-sheet" style={{textAlign:'center', display:'flex', flexDirection:'column', justifyContent:'center', minHeight:'60vh', paddingBottom:'50px'}}>
+                        <h1 style={{fontSize:'clamp(2rem, 5vw, 3rem)', color:'var(--accent)', marginBottom:'10px'}}>GPT Library</h1>
+                        <p style={{fontStyle:'italic', marginBottom:'40px', opacity:0.7}}>Select A Book To Read</p>
+                        <div className="book-grid">
+                            {books.length > 0 ? books.map(b => (
+                                <div key={b.id} className="book-card" onClick={() => navigateTo(b, null)}>
+                                    <h3 style={{marginTop:0, fontSize:'1.2rem'}}>{b.title}</h3>
+                                    <p style={{fontSize:'14px', opacity:0.7}}>{b.chapters.length} Chapters</p>
+                                </div>
+                            )) : <p>Loading books...</p>}
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const IndexView = () => (
+                <div className="reader-area">
+                    <div className="book-sheet">
+                        <div style={{textAlign:'center', marginBottom:'30px'}}>
+                            <h1 style={{margin:0, fontSize:'clamp(1.8rem, 4vw, 2.5rem)', lineHeight:'1.2'}}>{activeBook.title}</h1>
+                            <hr style={{borderTop:'2px solid var(--border-color)', width:'50px', margin:'20px auto', opacity:0.5}}/>
+                            <div style={{display:'flex', gap:'10px', justifyContent:'center'}}>
+                                <button onClick={() => {setSelectedChapters([]); openModal('print');}} className="no-print" style={{background:'transparent', border:'1px solid var(--text-main)', padding:'6px 15px', borderRadius:'20px', cursor:'pointer', color:'var(--text-main)', fontSize:'13px', display:'inline-flex', alignItems:'center', gap:'5px'}}>
+                                    <span className="material-icons" style={{fontSize:'16px'}}>picture_as_pdf</span> PDF
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            {activeBook.chapters.map(chap => (
+                                <div key={chap.id} onClick={() => loadChapter(activeBook, chap)}
+                                     style={{padding:'18px 10px', borderBottom:'1px dashed rgba(0,0,0,0.1)', cursor:'pointer', display:'flex', justifyContent:'space-between', fontSize:'17px', alignItems:'center'}}>
+                                    <span style={{fontWeight:'600'}}>{chap.title}</span><span className="material-icons" style={{fontSize:'18px', opacity:0.5}}>chevron_right</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const ReadView = () => (
+                <div className="reader-area" id="main-reader" style={{overflow: readingMode === 'flip' ? 'hidden' : 'auto'}}>
+                    {readingMode === 'scroll' ? (
+                        <div className="book-sheet">
+                            <div style={{textAlign:'center', fontSize:'12px', textTransform:'uppercase', letterSpacing:'2px', marginBottom:'30px', opacity:0.6, borderBottom:'1px solid rgba(0,0,0,0.1)', paddingBottom:'10px'}}>{activeBook.title} - {activeChapter.title}</div>
+                            <MarkdownViewer content={mdContent} fontSize={fontSize} />
+                            <div className="chapter-nav no-print">
+                                <button className="nav-btn" onClick={() => navigateChapter('prev')} disabled={activeBook.chapters.findIndex(c => c.id === activeChapter.id) <= 0}><span className="material-icons">west</span> আগের</button>
+                                <button className="nav-btn" onClick={() => navigateChapter('next')} disabled={activeBook.chapters.findIndex(c => c.id === activeChapter.id) >= activeBook.chapters.length - 1} style={{background: 'var(--text-main)', color: 'var(--bg-paper)'}}>পরের <span className="material-icons">east</span></button>
+                            </div>
+                        </div>
+                    ) : (
+                        <FlipBookViewer 
+                            content={mdContent} 
+                            fontSize={fontSize}
+                            onPrevChap={() => navigateChapter('prev')}
+                            onNextChap={() => navigateChapter('next')}
+                        />
+                    )}
+                </div>
+            );
+
+            const PrintModal = () => (
+                <div className="modal-overlay">
+                    <div className="modal-box">
+                        <h3 style={{marginTop:0, borderBottom:'1px solid var(--border-color)', paddingBottom:'10px'}}>অধ্যায় নির্বাচন করুন</h3>
+                        <div className="chapter-list">
+                            <label className="checkbox-item" style={{fontWeight:'bold', background:'rgba(0,0,0,0.05)'}}>
+                                <input type="checkbox" onChange={() => setSelectedChapters(selectedChapters.length === activeBook.chapters.length ? [] : activeBook.chapters.map(c=>c.id))} checked={selectedChapters.length === activeBook.chapters.length} style={{marginRight:'10px', transform:'scale(1.2)'}} /> সব সিলেক্ট করুন
+                            </label>
+                            {activeBook.chapters.map(chap => (
+                                <label key={chap.id} className="checkbox-item">
+                                    <input type="checkbox" checked={selectedChapters.includes(chap.id)} onChange={() => setSelectedChapters(p => p.includes(chap.id) ? p.filter(i => i !== chap.id) : [...p, chap.id])} style={{marginRight:'10px', transform:'scale(1.2)'}} /> {chap.title}
+                                </label>
+                            ))}
+                        </div>
+                        <div style={{display:'flex', gap:'10px'}}>
+                            <button onClick={() => {
+                                if(!selectedChapters.length) return alert("Select at least one");
+                                setLoading(true); closeModal();
+                                Promise.all(activeBook.chapters.filter(c => selectedChapters.includes(c.id)).map(c => fetch(`${activeBook.folder}/${c.file}`).then(r=>r.text())))
+                                .then(txts => {
+                                    setPrintContent(activeBook.chapters.filter(c=>selectedChapters.includes(c.id)).map((c,i)=>({title:c.title, content:txts[i]})));
+                                    setViewMode('print-preview'); setLoading(false); setTimeout(()=>window.print(),800);
+                                });
+                            }} className="action-btn">প্রিন্ট প্রিভিউ</button>
+                            <button onClick={closeModal} className="action-btn" style={{background:'transparent', color:'var(--text-main)', border:'1px solid var(--text-main)'}}>বাতিল</button>
+                        </div>
+                    </div>
+                </div>
+            );
 
             return (
                 <div className="app-container">
                     <div className={`toast ${toastMsg ? 'show' : ''}`}>{toastMsg}</div>
                     {loading && <div className="loader">লোড হচ্ছে...</div>}
-
-                    {viewMode === 'home' && <HomeView />}
                     
-                    {viewMode === 'read' && (
-                        readingSystem === 'scroll' ? <ScrollView /> : <FlipView />
+                    {showSearch && <SearchModal />}
+                    {showPrintModal && <PrintModal />}
+                    
+                    {viewMode === 'home' && <HomeView />}
+                    {viewMode === 'index' && <IndexView />}
+                    {viewMode === 'read' && <ReadView />}
+                    
+                    {viewMode === 'print-preview' && (
+                        <div className="reader-area">
+                            <div className="book-sheet">
+                                <div className="no-print" style={{textAlign:'center', marginBottom:'20px'}}>
+                                    <button onClick={() => window.print()} className="action-btn" style={{width:'auto', marginRight:'10px'}}>Save PDF</button>
+                                    <button onClick={() => setViewMode('index')} className="action-btn" style={{width:'auto', background:'#666'}}>Back</button>
+                                </div>
+                                {printContent.map((c, i) => (
+                                    <div key={i} style={{pageBreakAfter:'always'}}>
+                                        <h2>{c.title}</h2>
+                                        <MarkdownViewer content={c.content} fontSize={14} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     )}
-
-                    {/* Bottom Controls */}
+                    
                     <div className="controls no-print">
-                        <button className="btn" onClick={() => { setViewMode('home'); setActiveBook(null); }}><span className="material-icons">home</span></button>
+                        <button className="btn" onClick={() => navigateTo(null)} title="হোম"><span className="material-icons">home</span></button>
+                        <div className="v-sep"></div>
+                        <button className="btn" onClick={() => openModal('search')} title="সার্চ"><span className="material-icons" style={{color: 'var(--accent)'}}>search</span></button>
                         <div className="v-sep"></div>
                         
+                        {/* --- NEW TOGGLE BUTTON FOR FLIP/SCROLL --- */}
                         {viewMode === 'read' && (
                             <>
-                                <button className={`btn ${readingSystem === 'scroll' ? 'active-mode' : ''}`} onClick={() => readingSystem !== 'scroll' && toggleReadingSystem()}>
-                                    <span className="material-icons">article</span>
+                                <button 
+                                    className={`btn ${readingMode === 'flip' ? 'active-mode' : ''}`} 
+                                    onClick={() => setReadingMode(m => m === 'scroll' ? 'flip' : 'scroll')} 
+                                    title="View Mode"
+                                >
+                                    <span className="material-icons">{readingMode === 'scroll' ? 'vertical_split' : 'auto_stories'}</span>
                                 </button>
-                                <button className={`btn ${readingSystem === 'flip' ? 'active-mode' : ''}`} onClick={() => readingSystem !== 'flip' && toggleReadingSystem()}>
-                                    <span className="material-icons">auto_stories</span>
-                                </button>
-                                <div className="v-sep"></div>
-                                <button className="btn" onClick={() => setFontSize(f => f - 2)}><span style={{fontSize:14, fontWeight:'bold'}}>A-</span></button>
-                                <button className="btn" onClick={() => setFontSize(f => f + 2)}><span style={{fontSize:14, fontWeight:'bold'}}>A+</span></button>
                                 <div className="v-sep"></div>
                             </>
                         )}
-                        <button className="btn" onClick={cycleTheme}><span className="material-icons">{theme==='white'?'brightness_5':'dark_mode'}</span></button>
+                        
+                        {viewMode !== 'home' && <><button className="btn" onClick={handleShare} title="শেয়ার"><span className="material-icons" style={{color: 'var(--accent)'}}>share</span></button><div className="v-sep"></div></>}
+                        {viewMode === 'read' && <><button className="btn" onClick={() => navigateTo(activeBook, null)} title="সূচিপত্র"><span className="material-icons">list</span></button><div className="v-sep"></div><button className="btn" onClick={decreaseFont}><span className="btn-text">A-</span></button><button className="btn" onClick={increaseFont}><span className="btn-text">A+</span></button><div className="v-sep"></div></>}
+                        <button className="btn" onClick={cycleTheme} title="থিম"><span className="material-icons">{theme === 'white' ? 'brightness_5' : theme === 'sepia' ? 'menu_book' : 'dark_mode'}</span></button>
                     </div>
                 </div>
             );
@@ -487,4 +723,4 @@
         root.render(<App />);
     </script>
 </body>
-</html>
+  </html>

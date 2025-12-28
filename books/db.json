@@ -10,7 +10,59 @@
       { "id": "c4", "title": "Terms of Agreement", "file": "terms.md" },
       { "id": "c5", "title": "Frequently Asked Questions", "file": "faq.md" }
     ]
-  },  
+  },
+  {
+  "id": "hrm",
+  "title": "Human Resource Management",
+  "folder": "books/hrm",
+  "chapters": [
+    {
+      "id": "ch1",
+      "title": "Introduction to Human Resource Management",
+      "file": "1.md"
+    },
+    {
+      "id": "ch2",
+      "title": "Human Resource Planning",
+      "file": "2.md"
+    },
+    {
+      "id": "ch3",
+      "title": "Job Analysis and Work Study",
+      "file": "3.md"
+    },
+    {
+      "id": "ch4",
+      "title": "Recruitment and Selections of Human Resources",
+      "file": "4.md"
+    },
+    {
+      "id": "ch5",
+      "title": "Career Transition",
+      "file": "5.md"
+    },
+    {
+      "id": "ch6",
+      "title": "Skill Training",
+      "file": "6.md"
+    },
+    {
+      "id": "ch7",
+      "title": "Performance Evaluation",
+      "file": "7.md"
+    },
+    {
+      "id": "ch8",
+      "title": "Wage and Salary Administration",
+      "file": "8.md"
+    },
+    {
+      "id": "ch9",
+      "title": "Employee Benefits",
+      "file": "9.md"
+    }
+  ]
+},
   {
     "id": "bs2",
     "title": "Business Statistics-II",

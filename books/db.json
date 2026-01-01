@@ -16,6 +16,11 @@
   "folder": "books/eim",
   "chapters": [
     {
+      "id": "cov",
+      "title": "Cover Page",
+      "file": "0.md"
+    },
+    {
       "id": "ch1",
       "title": "Introduction",
       "file": "1.md"
@@ -67,6 +72,11 @@
   "title": "Human Resource Management",
   "folder": "books/hrm",
   "chapters": [
+        {
+      "id": "cov",
+      "title": "Cover Page",
+      "file": "0.md"
+    },
     {
       "id": "ch1",
       "title": "Introduction to Human Resource Management",
@@ -118,7 +128,13 @@
     "id": "bs2",
     "title": "Business Statistics-II",
     "folder": "books/bs2",
-    "chapters": [{
+    "chapters": [
+          {
+      "id": "cov",
+      "title": "Cover Page",
+      "file": "0.md"
+    },
+      {
       "id": "ch1",
       "title": "Test of Hypothesis",
       "file": "1.md"
@@ -159,6 +175,11 @@
   "title": "Risk Management and Insurance",
   "folder": "books/rm",
   "chapters": [
+        {
+      "id": "cov",
+      "title": "Cover Page",
+      "file": "0.md"
+    },
     {
       "id": "ch1",
       "title": "Introduction to Insurance",

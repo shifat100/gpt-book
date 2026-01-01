@@ -10,6 +10,57 @@
       { "id": "c4", "title": "Terms of Agreement", "file": "terms.md" },
       { "id": "c5", "title": "Frequently Asked Questions", "file": "faq.md" }
     ]
+  },{
+  "id": "eim",
+  "title": "Export-Import Management",
+  "folder": "books/eim",
+  "chapters": [
+    {
+      "id": "ch1",
+      "title": "Introduction",
+      "file": "1.md"
+    },
+    {
+      "id": "ch2",
+      "title": "Finding Export Market and Foreign Suppliers",
+      "file": "2.md"
+    },
+    {
+      "id": "ch3",
+      "title": "Agents and Distributors",
+      "file": "3.md"
+    },
+    {
+      "id": "ch4",
+      "title": "Pricing",
+      "file": "4.md"
+    },
+    {
+      "id": "ch5",
+      "title": "Business Risk Management and Export Financing",
+      "file": "5.md"
+    },
+    {
+      "id": "ch6",
+      "title": "Customs Clearance of Import and Export Cargo",
+      "file": "6.md"
+    },
+    {
+      "id": "ch7",
+      "title": "Export-Import Documentation",
+      "file": "7.md"
+    },
+    {
+      "id": "ch8",
+      "title": "Logistics and Modes of Transportation",
+      "file": "8.md"
+    },
+    {
+      "id": "ch9",
+      "title": "Export Order Processing",
+      "file": "9.md"
+    }
+  ]
   },
   {
   "id": "hrm",

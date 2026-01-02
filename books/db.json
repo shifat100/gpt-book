@@ -10,7 +10,65 @@
       { "id": "c4", "title": "Terms of Agreement", "file": "terms.md" },
       { "id": "c5", "title": "Frequently Asked Questions", "file": "faq.md" }
     ]
-  },{
+  },
+  {
+  "id": "scm",
+  "title": "Supply Chain Management",
+  "folder": "books/scm",
+  "chapters": [
+    {
+      "id": "cov",
+      "title": "Cover Page",
+      "file": "0.md"
+    },
+    {
+      "id": "ch1",
+      "title": "Understanding the Supply Chain",
+      "file": "1.md"
+    },
+    {
+      "id": "ch2",
+      "title": "Designing Distribution Networks",
+      "file": "2.md"
+    },
+    {
+      "id": "ch3",
+      "title": "Network Design in the Supply Chain",
+      "file": "3.md"
+    },
+    {
+      "id": "ch4",
+      "title": "Designing Global Supply Chain Networks",
+      "file": "4.md"
+    },
+    {
+      "id": "ch5",
+      "title": "Demand Forecasting in a Supply Chain",
+      "file": "5.md"
+    },
+    {
+      "id": "ch6",
+      "title": "Aggregate Planning in a Supply Chain",
+      "file": "6.md"
+    },
+    {
+      "id": "ch7",
+      "title": "Planning and Managing Inventories",
+      "file": "7.md"
+    },
+    {
+      "id": "ch8",
+      "title": "Logistics In Supply Chain",
+      "file": "8.md"
+    },
+    {
+      "id": "ch9",
+      "title": "Supplier Management",
+      "file": "9.md"
+    }
+  ]
+  },
+  {
   "id": "eim",
   "title": "Export-Import Management",
   "folder": "books/eim",

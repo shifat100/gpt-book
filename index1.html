@@ -2,358 +2,252 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dynamic Flipbook Library</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Flipbook</title>
     
-    <!-- React & Libraries -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- লাইব্রেরি (ইন্টারনেট কানেকশন প্রয়োজন, অথবা লোকাল ফাইলে সেভ করে নিন) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Turn.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/3/turn.min.js"></script>
+    <!-- Markdown Parser -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    
-    <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <style>
-        /* --- Base Setup --- */
-        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 0; background: #333; height: 100vh; overflow: hidden; font-family: 'Crimson Text', serif; display: flex; justify-content: center; align-items: center; }
-
-        /* --- 3D Scene --- */
-        .scene {
-            width: 100%;
-            height: 100%;
+        body {
+            overflow: hidden;
+            background: #333;
+            margin: 0;
+            padding: 0;
+            font-family: 'Crimson Text', serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            perspective: 1500px;
-            background: url('https://www.transparenttextures.com/patterns/wood-pattern.png'), #222;
+            height: 100vh;
         }
 
-        /* --- The Book --- */
-        .book {
-            position: relative;
-            width: 90vw; /* Mobile Default */
-            height: 80vh;
-            max-width: 500px; /* Mobile Max */
-            transform-style: preserve-3d;
-            transition: transform 0.6s;
+        #flipbook {
+            width: 800px;
+            height: 500px;
+            transition: margin-left 0.2s;
         }
 
-        /* Desktop Size (Double Page) */
-        @media (min-width: 768px) {
-            .book {
-                width: 900px; /* 450px per page */
-                max-width: 90%;
-            }
-        }
-
-        /* --- Pages --- */
-        .page {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: #fff;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.2);
+        #flipbook .page {
+            width: 400px;
+            height: 500px;
+            background-color: #fdf6e3;
+            color: #333;
             overflow: hidden;
-            border-radius: 5px;
+            box-shadow: inset -5px 0 20px rgba(0,0,0,0.1);
+            font-size: 16px;
+            line-height: 1.6;
         }
 
-        /* Hard Cover Style */
-        .page.hard {
-            background: #4a192c; /* Hard cover color */
-            color: #d4af37; /* Gold text */
+        /* কনটেন্ট প্যাডিং */
+        .page-content {
+            padding: 40px;
+            height: 100%;
+            overflow: hidden; /* টেক্সট বেশি হলে যেন পেজের বাইরে না যায় */
+            text-align: justify;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        /* কভার পেজ স্টাইল */
+        .hard {
+            background: #4a192c !important;
+            color: #d4af37 !important;
+            font-weight: bold;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            border: 2px solid #2c0e1a;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.5), 5px 5px 20px rgba(0,0,0,0.3);
-        }
-        .page.hard h1 { font-family: 'Cinzel', serif; font-size: 2.5rem; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
-        .page.hard small { font-family: sans-serif; opacity: 0.8; letter-spacing: 1px; margin-top: 10px; }
-
-        /* Content Page Style */
-        .page.paper {
-            background: #fdf6e3;
-            color: #333;
+            border: 4px double #d4af37;
         }
 
-        /* --- Desktop Dual View Logic --- */
-        @media (min-width: 768px) {
-            /* বাম পাশের পাতা */
-            .page.left {
-                width: 50%;
-                left: 0;
-                border-radius: 5px 0 0 5px;
-                transform-origin: right center;
-                border-right: 1px solid rgba(0,0,0,0.1);
+        .hard h1 { font-size: 2.5rem; margin: 0; text-transform: uppercase; }
+        .hard p { opacity: 0.8; }
+
+        /* মোবাইল রেসপন্সিভ */
+        @media (max-width: 768px) {
+            #flipbook {
+                width: 90vw;
+                height: 80vh;
+                margin: 0 auto;
             }
-            /* ডান পাশের পাতা */
-            .page.right {
-                width: 50%;
-                left: 50%;
-                border-radius: 0 5px 5px 0;
-                transform-origin: left center;
-                border-left: 1px solid rgba(0,0,0,0.05);
+            #flipbook .page {
+                width: 100%; /* মোবাইলে এক পাতা */
+                height: 100%;
             }
         }
 
-        /* --- Content Layout (Column System) --- */
-        .content-flow {
-            height: 100%;
-            padding: 40px 30px;
-            font-size: 18px;
-            line-height: 1.6;
-            text-align: justify;
-            
-            /* Magic Column Logic */
-            column-width: 100vw; /* Mobile: 1 column */
-            column-gap: 60px;
-            column-fill: auto;
-            
-            overflow-x: hidden; /* আমরা জাভাস্ক্রিপ্ট দিয়ে স্ক্রল কন্ট্রোল করব */
-            overflow-y: hidden;
-        }
-
-        @media (min-width: 768px) {
-            .content-flow {
-                column-width: 450px; /* Desktop: Width of half book */
-                padding: 50px;
-            }
+        .loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #222; color: #fff; display: flex; 
+            justify-content: center; align-items: center; z-index: 999;
         }
         
-        .content-flow img { max-width: 100%; height: auto; display: block; margin: 10px auto; border: 3px double #ccc; }
-        .content-flow h1, .content-flow h2 { color: #8b0000; margin-top: 0; text-align: center; font-family: 'Cinzel', serif; }
-
-        /* --- Controls --- */
         .controls {
-            position: fixed; bottom: 20px; z-index: 100;
+            position: fixed; bottom: 20px; z-index: 1000;
             background: rgba(255,255,255,0.9); padding: 10px 20px;
-            border-radius: 30px; display: flex; gap: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            border-radius: 30px; display: flex; gap: 10px;
         }
-        .btn { border: none; background: none; cursor: pointer; display: flex; align-items: center; font-weight: bold; }
-        .btn:hover { color: #8b0000; }
-
-        /* Click Zones */
-        .click-zone { position: absolute; top: 0; bottom: 0; width: 15%; z-index: 50; cursor: pointer; }
-        .zone-prev { left: 0; }
-        .zone-next { right: 0; }
-        
-        /* Loading */
-        .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        button { cursor: pointer; padding: 5px 15px; }
     </style>
 </head>
 <body>
 
-    <div id="root"></div>
+    <div class="loader" id="loader">বই লোড হচ্ছে...</div>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+    <!-- ফ্লিপবুক কন্টেইনার -->
+    <div id="flipbook">
+        <!-- জাভাস্ক্রিপ্ট দিয়ে এখানে পেজ ঢোকানো হবে -->
+    </div>
 
-        // --- Helper: Markdown Renderer ---
-        const MarkdownContent = ({ content, pageIndex, isDesktop }) => {
-            const containerRef = useRef();
+    <div class="controls">
+        <button onclick="$('#flipbook').turn('previous')">Previous</button>
+        <button onclick="$('#flipbook').turn('next')">Next</button>
+    </div>
 
-            useEffect(() => {
-                if (containerRef.current) {
-                    // স্ক্রল পজিশন সেট করা হচ্ছে পেইজ অনুযায়ী
-                    const pageWidth = containerRef.current.clientWidth;
-                    // ডেক্সটপে এক সাথে ২ পাতা দেখায়, তাই লজিক আলাদা
-                    const scrollAmount = isDesktop 
-                        ? (Math.floor((pageIndex - 1) / 2) * (pageWidth * 2)) // ২ কলাম জাম্প
-                        : ((pageIndex - 1) * pageWidth); // ১ কলাম জাম্প
-                    
-                    containerRef.current.scrollLeft = scrollAmount;
-                }
-            }, [pageIndex, content, isDesktop]);
-
-            return (
-                <div className="content-flow" ref={containerRef} dangerouslySetInnerHTML={{ __html: marked.parse(content) }} />
-            );
-        };
-
-        function App() {
-            const [books, setBooks] = useState([]);
-            const [activeBook, setActiveBook] = useState(null);
-            const [activeChapter, setActiveChapter] = useState(null);
-            const [mdContent, setMdContent] = useState('');
+    <script>
+        // --- ১. ডাটা লোড করার ফাংশন ---
+        $(document).ready(function() {
             
-            // State for Pagination
-            const [page, setPage] = useState(0); // 0 = Cover
-            const [totalPages, setTotalPages] = useState(1);
-            const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
-            const [loading, setLoading] = useState(true);
-
-            // Ref for Layout Calculation
-            const hiddenRenderRef = useRef(null);
-
-            // 1. Initial Load
-            useEffect(() => {
-                const handleResize = () => setIsDesktop(window.innerWidth >= 768);
-                window.addEventListener('resize', handleResize);
-
-                fetch('books/db.json').then(r => r.json()).then(data => {
-                    setBooks(data);
-                    // URL Check
-                    const params = new URLSearchParams(window.location.search);
-                    const bId = params.get('book');
-                    if (bId) {
-                        const book = data.find(b => b.id === bId);
-                        if(book) loadBook(book, params.get('chapter'));
-                    } else if (data.length > 0) {
-                        loadBook(data[0]); // Auto Load First Book
-                    }
-                }).catch(e => { console.error(e); setLoading(false); });
-
-                return () => window.removeEventListener('resize', handleResize);
-            }, []);
-
-            // 2. Load Book & Chapter
-            const loadBook = (book, chapId = null) => {
-                setActiveBook(book);
-                const chap = chapId ? book.chapters.find(c => c.id === chapId) : book.chapters[0];
-                loadChapter(book, chap);
-            };
-
-            const loadChapter = (book, chapter) => {
-                setLoading(true);
-                setActiveChapter(chapter);
-                fetch(`${book.folder}/${chapter.file}`).then(r => r.text()).then(text => {
-                    const fullText = `# ${chapter.title}\n\n${text}`;
-                    setMdContent(fullText);
-                    setPage(0); // Reset to Cover on new chapter
-                    
-                    // Layout Calculation Timeout
-                    setTimeout(() => calculatePages(fullText), 500);
-                });
-            };
-
-            // 3. Calculate Pages (Tricky part)
-            const calculatePages = (text) => {
-                // আমরা একটি অদৃশ্য ডিভ ব্যবহার করে মাপব টেক্সট কত লম্বা
-                const dummy = document.createElement('div');
-                dummy.className = 'content-flow';
-                dummy.style.visibility = 'hidden';
-                dummy.style.position = 'absolute';
-                dummy.style.width = isDesktop ? '450px' : '90vw'; // কলাম উইথ এর সমান
-                dummy.innerHTML = marked.parse(text);
-                document.body.appendChild(dummy);
-
-                // মোট স্ক্রল উইথ / কলাম উইথ = মোট পেজ
-                const totalW = dummy.scrollWidth;
-                const clientW = dummy.clientWidth + 60; // Gap adjustment
-                
-                // Cover is page 0. Content starts at 1.
-                // Total content pages:
-                const contentPages = Math.ceil(totalW / clientW);
-                setTotalPages(contentPages);
-                
-                document.body.removeChild(dummy);
-                setLoading(false);
-            };
-
-            // Re-calculate on resize
-            useEffect(() => {
-                if(mdContent) calculatePages(mdContent);
-            }, [isDesktop]);
-
-
-            // 4. Navigation
-            const turnPage = (dir) => {
-                if (dir === 'next') {
-                    // যদি ডেক্সটপ হয়, ২ পাতা করে বাড়াবে, মোবাইল হলে ১
-                    const increment = isDesktop ? 2 : 1;
-                    if (page + increment <= totalPages) {
-                        setPage(p => p + increment);
-                    } else {
-                        // Next Chapter Logic
-                        const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
-                        if(idx < activeBook.chapters.length - 1) {
-                            loadChapter(activeBook, activeBook.chapters[idx+1]);
-                        }
-                    }
+            // books.json লোড করা
+            $.getJSON('books/db.json', function(books) {
+                if(books.length > 0) {
+                    const firstBook = books[0];
+                    loadBook(firstBook);
                 } else {
-                    const decrement = isDesktop ? 2 : 1;
-                    if (page - decrement >= 0) {
-                        setPage(p => p - decrement);
-                    } else {
-                        // Prev Chapter Logic
-                        const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
-                        if(idx > 0) loadChapter(activeBook, activeBook.chapters[idx-1]);
-                    }
+                    alert("কোনো বই পাওয়া যায়নি!");
                 }
-            };
+            }).fail(function() {
+                console.log("books.json পাওয়া যায়নি, ডামি ডাটা ব্যবহার করা হচ্ছে...");
+                // টেস্টিং এর জন্য ডামি ডাটা (যদি আপনার ফাইল না থাকে)
+                loadBook({
+                    title: "ডেমো বই",
+                    chapters: [{title: "অধ্যায় ১", file: "chapter1.md"}]
+                });
+            });
 
-            // --- Render Logic ---
-            // পেজ ০ = কভার
-            // পেজ ১+ = কনটেন্ট
-            
-            return (
-                <div className="scene">
-                    {loading && <div className="loader">LIBRARY LOADING...</div>}
+        });
 
-                    <div className="book">
-                        
-                        {/* Click Zones for Interaction */}
-                        <div className="click-zone zone-prev" onClick={() => turnPage('prev')}></div>
-                        <div className="click-zone zone-next" onClick={() => turnPage('next')}></div>
+        // --- ২. বই লোড এবং পেজ বানানোর লজিক ---
+        function loadBook(book) {
+            const chapter = book.chapters[0]; // প্রথম অধ্যায়
+            const filePath = book.folder ? `${book.folder}/${chapter.file}` : chapter.file;
 
-                        {/* --- DISPLAY LOGIC --- */}
-                        
-                        {/* COVER PAGE (Always shows if page is 0 OR desktop view requires left side cover) */}
-                        {(page === 0 || (isDesktop && page === 1)) && (
-                            <div className={`page hard ${isDesktop ? (page===0 ? 'right' : 'left') : ''}`} style={{zIndex: 10}}>
-                                <h1>{activeBook?.title || 'Library'}</h1>
-                                <small>{activeChapter?.title}</small>
-                                <div style={{marginTop: '20px', fontSize:'3rem'}}>❦</div>
-                                <small style={{marginTop:'auto', marginBottom:'20px'}}>Dynamic Edition</small>
-                            </div>
-                        )}
-
-                        {/* CONTENT PAGES */}
-                        {page > 0 && (
-                            <>
-                                {/* Left Side Content (Desktop) or Main Content (Mobile) */}
-                                <div className={`page paper ${isDesktop ? 'left' : ''}`}>
-                                    <MarkdownContent content={mdContent} pageIndex={isDesktop ? page - 1 : page} isDesktop={isDesktop} />
-                                    <div style={{position:'absolute', bottom:'10px', left:'50%', transform:'translateX(-50%)', fontSize:'12px', opacity:0.5}}>{page}</div>
-                                </div>
-
-                                {/* Right Side Content (Desktop Only) */}
-                                {isDesktop && page < totalPages && (
-                                    <div className="page paper right">
-                                        <MarkdownContent content={mdContent} pageIndex={page} isDesktop={isDesktop} />
-                                        <div style={{position:'absolute', bottom:'10px', left:'50%', transform:'translateX(-50%)', fontSize:'12px', opacity:0.5}}>{page + 1}</div>
-                                    </div>
-                                )}
-                            </>
-                        )}
-
-                    </div>
-
-                    {/* Bottom Controls */}
-                    <div className="controls">
-                        <select onChange={(e) => {
-                            const b = books.find(x => x.id === e.target.value);
-                            if(b) loadBook(b);
-                        }} value={activeBook?.id || ''}>
-                            {books.map(b => <option key={b.id} value={b.id}>{b.title}</option>)}
-                        </select>
-                        <span>|</span>
-                        <button className="btn" onClick={() => turnPage('prev')}><span className="material-icons">arrow_back</span></button>
-                        <span>{page} / {totalPages}</span>
-                        <button className="btn" onClick={() => turnPage('next')}><span className="material-icons">arrow_forward</span></button>
-                    </div>
-                </div>
-            );
+            // মার্কডাউন ফাইল ফেচ করা
+            fetch(filePath)
+            .then(response => {
+                if(!response.ok) throw new Error("ফাইল পাওয়া যায়নি");
+                return response.text();
+            })
+            .then(text => {
+                const htmlContent = marked.parse(text);
+                createFlipbook(book.title, htmlContent);
+            })
+            .catch(err => {
+                // ফাইল না পেলে ডামি টেক্সট দিয়ে বই বানাবে
+                const dummyText = `
+                    <p>দুঃখিত, ফাইল লোড করা যায়নি।</p>
+                    <p>আপনার ফোল্ডারে ফাইল ঠিকঠাক আছে কিনা দেখুন।</p>
+                    <p>${err}</p>
+                    <p>লরেম ইপসাম বা ডামি টেক্সট...</p>
+                `;
+                createFlipbook(book.title, dummyText);
+            });
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        // --- ৩. টেক্সট কেটে কেটে পেজ বানানো ---
+        function createFlipbook(title, contentHTML) {
+            const flipbook = $('#flipbook');
+            flipbook.html(''); // আগের সব ক্লিয়ার
+
+            // কভার পেজ যোগ করা
+            const cover = `
+                <div class="hard">
+                    <h1>${title}</h1>
+                    <p>ডায়নামিক লাইব্রেরি</p>
+                    <small>~ পাতা উল্টান ~</small>
+                </div>
+                <div class="hard"></div>
+            `;
+            flipbook.append(cover);
+
+            // কনটেন্টকে ছোট ছোট ভাগে ভাগ করা (পেজ বানানোর জন্য)
+            // আমরা HTML কে প্যারাগ্রাফ (p) ট্যাগে ভাগ করে পেজে ঢোকাবো
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(contentHTML, 'text/html');
+            const elements = Array.from(doc.body.children);
+
+            let currentPageContent = '';
+            let charCount = 0;
+            const maxCharsPerPage = 600; // প্রতি পেজে কতগুলো অক্ষর থাকবে
+
+            elements.forEach((el, index) => {
+                const html = el.outerHTML;
+                const textLen = el.textContent.length;
+
+                // যদি পেজ ভরে যায়, তাহলে নতুন পেজ বানাও
+                if (charCount + textLen > maxCharsPerPage) {
+                    addPage(flipbook, currentPageContent);
+                    currentPageContent = '';
+                    charCount = 0;
+                }
+
+                currentPageContent += html;
+                charCount += textLen;
+            });
+
+            // বাকি থাকা কন্টেন্ট শেষ পেজে
+            if (currentPageContent) {
+                addPage(flipbook, currentPageContent);
+            }
+
+            // ব্যাক কভার
+            flipbook.append('<div class="hard"></div><div class="hard">সমাপ্ত</div>');
+
+            // --- Turn.js চালু করা ---
+            initTurnJs();
+            $('#loader').hide();
+        }
+
+        function addPage(container, content) {
+            container.append(`
+                <div class="page">
+                    <div class="page-content">
+                        ${content}
+                    </div>
+                </div>
+            `);
+        }
+
+        // --- ৪. Turn.js ইনিশিয়ালাইজেশন ---
+        function initTurnJs() {
+            const isMobile = $(window).width() < 768;
+            
+            $('#flipbook').turn({
+                width: isMobile ? $(window).width() * 0.9 : 800,
+                height: isMobile ? $(window).height() * 0.8 : 500,
+                autoCenter: true,
+                display: isMobile ? 'single' : 'double', // মোবাইলে এক পাতা, পিসিতে দুই
+                duration: 1000,
+                gradients: true,
+                elevation: 50
+            });
+
+            // কিবোর্ড দিয়ে কন্ট্রোল
+            $(document).keydown(function(e){
+                if (e.keyCode == 37) $('#flipbook').turn('previous');
+                if (e.keyCode == 39) $('#flipbook').turn('next');
+            });
+        }
+
+        // উইন্ডো রিসাইজ হলে এডজাস্ট করা
+        $(window).resize(function() {
+             $('#flipbook').turn('resize');
+        });
+
     </script>
 </body>
 </html>

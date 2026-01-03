@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GPT E-Book Library</title>
-    <meta name="theme-color" id="theme-color" content="#4285f4" />
+    <title>GPT E-Book Reader</title>
+    <meta name="theme-color" id="theme-color" content="#ffffff" />
 
     <!-- KaTeX CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css">
@@ -15,7 +15,7 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    <!-- KaTeX JS & Auto-Render Extension -->
+    <!-- KaTeX JS -->
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/contrib/auto-render.min.js"></script>
 
@@ -28,158 +28,132 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         :root {
-            --bg-body: #e0e0e0;      
+            --bg-body: #f0f2f5;      
             --bg-paper: #ffffff;     
-            --text-main: #1a1a1a;    
-            --border-color: #000;    
+            --text-main: #2c2c2c;    
+            --border-color: #ccc;    
             --accent: #8b0000;
             --highlight: #ffeeba;       
-            --shadow: 0 5px 20px rgba(0,0,0,0.15);
-            --safe-bottom: 80px; 
-            
-            /* Flipbook Settings */
-            --book-w: 400px;
-            --book-h: 600px;
-            --flip-duration: 0.8s;
+            --safe-bottom: 60px; 
+            --header-height: 50px;
         }
 
         /* থিমস */
-        body.theme-white { --bg-body: #f0f2f5; --bg-paper: #ffffff; --text-main: #2c2c2c; }
-        body.theme-sepia { --bg-body: #f4ecd8; --bg-paper: #fdf6e3; --text-main: #5b4636; --accent: #a0522d; }
-        body.theme-black { --bg-body: #121212; --bg-paper: #1e1e1e; --text-main: #d1d1d1; --accent: #ff6b6b; }
+        body.theme-sepia { --bg-body: #f4ecd8; --bg-paper: #fdf6e3; --text-main: #5b4636; --border-color: #8b7355; }
+        body.theme-black { --bg-body: #121212; --bg-paper: #1e1e1e; --text-main: #d1d1d1; --border-color: #444; --accent: #ff6b6b; }
 
         html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; }
-        body { background-color: var(--bg-body); color: var(--text-main); font-family: 'Crimson Text', serif; }
+        body { 
+            background-color: var(--bg-body); color: var(--text-main); 
+            font-family: 'Crimson Text', serif; 
+            transition: background 0.3s ease, color 0.3s ease;
+        }
 
-        .app-container { display: flex; flex-direction: column; width: 100%; height: 100vh; }
+        .app-container { display: flex; flex-direction: column; width: 100%; height: 100vh; position: relative; }
         
-        /* Reader Area */
-        .reader-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; justify-content: center; position: relative; }
-        
-        /* Flip Mode Special Styles */
-        .reader-area.flip-mode {
-            background-color: #333; /* Dark background for reading focus */
-            align-items: center;
-            overflow: hidden;
-            padding: 0;
-        }
-
-        /* --- Scroll View Book Sheet --- */
-        .book-sheet {
-            background-color: var(--bg-paper); color: var(--text-main);
-            width: 100%; max-width: 800px; min-height: 100%; height: fit-content;
-            padding: 60px 50px; padding-bottom: var(--safe-bottom);
-            box-shadow: var(--shadow); margin-bottom: 20px; border-radius: 4px;
-        }
-
-        /* --- FLIPBOOK ENGINE (Robust & Center Aligned) --- */
-        .flip-scene {
-            width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: center;
-            perspective: 2000px;
-            overflow: hidden;
-        }
-
-        .flip-book {
+        /* --- বুক রিডার এরিয়া (পেজিনেশন স্টাইল) --- */
+        .reader-viewport {
+            flex: 1;
+            width: 100%;
+            height: calc(100vh - var(--safe-bottom) - var(--header-height));
+            margin-top: var(--header-height);
+            overflow: hidden; /* স্ক্রলবার লুকানো */
             position: relative;
-            width: var(--book-w);
-            height: var(--book-h);
-            transform-style: preserve-3d;
-            transition: transform 0.5s;
-        }
-
-        /* When book is open (not on cover), shift it to center spread */
-        .flip-book.open { transform: translateX(50%); } 
-
-        .flip-page {
-            position: absolute; width: 100%; height: 100%;
-            top: 0; left: 0;
-            transform-origin: left center;
-            transition: transform var(--flip-duration) cubic-bezier(0.645, 0.045, 0.355, 1);
-            transform-style: preserve-3d;
-            cursor: pointer;
             background-color: var(--bg-paper);
-            border-radius: 0 5px 5px 0;
-            border: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
         }
 
-        .flip-page.flipped { transform: rotateY(-180deg); }
+        /* কনটেন্ট কলাম (Column) লজিক */
+        .markdown-columns {
+            height: 100%;
+            width: 100%;
+            padding: 40px;
+            
+            /* ডিফল্ট: ১ কলাম (মোবাইল পোর্ট্রেট) */
+            column-count: 1;
+            column-gap: 80px; /* দুই পাতার মাঝখানের গ্যাপ */
+            column-fill: auto;
+            column-rule: 1px solid rgba(0,0,0,0.1); /* মাঝখানের দাগ */
+            
+            font-size: 18px;
+            line-height: 1.7;
+            text-align: justify;
+            
+            /* হরিজন্টাল স্ক্রলিং তৈরি করা */
+            overflow-x: scroll;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+            scroll-snap-type: x mandatory;
+        }
+        
+        /* স্ক্রলবার লুকানো */
+        .markdown-columns::-webkit-scrollbar { display: none; }
+        .markdown-columns { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Front & Back of each page */
-        .page-face {
-            position: absolute; width: 100%; height: 100%;
-            top: 0; left: 0;
-            backface-visibility: hidden;
-            overflow: hidden;
-            background-color: var(--bg-paper);
-            padding: 30px;
-            display: flex; flex-direction: column;
+        /* এলিমেন্ট ব্রেকিং ফিক্স */
+        .markdown-columns h1, 
+        .markdown-columns h2, 
+        .markdown-columns h3, 
+        .markdown-columns p, 
+        .markdown-columns pre, 
+        .markdown-columns img,
+        .markdown-columns blockquote {
+            break-inside: avoid; /* কলামের মাঝে এলিমেন্ট কাটা না পড়ার জন্য */
+            page-break-inside: avoid;
         }
 
-        .page-face.front { z-index: 2; }
-        .page-face.back { 
-            transform: rotateY(180deg); 
-            z-index: 1; 
-            border-left: none; 
-            box-shadow: inset 5px 0 10px rgba(0,0,0,0.05); /* Spine shadow */
+        .markdown-columns img { max-width: 100%; height: auto; display: block; margin: 10px auto; }
+        
+        /* --- রেসপন্সিভ কলাম লজিক --- */
+        /* ল্যান্ডস্কেপ বা ডেক্সটপ হলে ২ কলাম */
+        @media (min-width: 768px), (orientation: landscape) {
+            .markdown-columns {
+                column-count: 2;
+                padding: 50px 80px;
+            }
         }
 
-        /* Realistic Gradients */
-        .page-face.front::after {
-            content: ""; position: absolute; top:0; right:0; bottom:0; width: 15px;
-            background: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.1)); pointer-events: none;
+        /* --- হেডার এবং ফুটার --- */
+        .top-bar {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background: var(--bg-paper); border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 100;
         }
+        .book-title { font-weight: bold; font-size: 14px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
 
-        /* Responsive Flipbook */
-        @media (max-width: 850px) {
-            :root { --book-w: 90vw; --book-h: 80vh; }
-            .flip-book.open { transform: translateX(0); } /* No shift on mobile */
-            .flip-page.flipped { transform: rotateY(-180deg); opacity: 0; pointer-events: none; } /* Hide previous page on mobile */
-            .page-face { padding: 20px; }
-        }
-
-        .page-footer { margin-top: auto; text-align: center; font-size: 12px; opacity: 0.5; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 5px; }
-        .page-content { flex: 1; overflow-y: auto; overflow-x: hidden; } /* Allow internal scroll if text too long */
-
-        /* --- Other Styles (Markdown, Controls) --- */
-        @media (max-width: 768px) {
-            .reader-area:not(.flip-mode) { padding: 0; }
-            .book-sheet { padding: 30px 20px 100px 20px; box-shadow: none; border-radius: 0; }
-        }
-
-        .markdown-body { line-height: 1.6; font-size: 16px; }
-        .markdown-body h1 { text-align: center; color: var(--accent); }
-        .markdown-body img { max-width: 100%; margin: 10px auto; display: block; }
-        .katex { font-size: 1.1em; }
-
-        .chapter-nav { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc; }
-        .nav-btn { background: none; border: 1px solid var(--text-main); color: var(--text-main); padding: 8px 16px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-
-        /* Controls */
         .controls {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: var(--bg-paper); padding: 10px 20px; border-radius: 50px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: flex; gap: 12px; z-index: 1000;
-            border: 1px solid rgba(0,0,0,0.1); align-items: center;
+            position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%);
+            background: var(--bg-paper); padding: 8px 20px; border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; gap: 10px; z-index: 1000;
+            border: 1px solid var(--border-color);
         }
-        .btn { background: none; border: none; cursor: pointer; color: var(--text-main); display: flex; justify-content: center; padding: 8px; border-radius: 50%; }
-        .btn.active { background: var(--text-main); color: var(--bg-paper); }
-        .btn:active { transform: scale(0.9); }
-        .v-sep { width: 1px; height: 20px; background: currentColor; opacity: 0.2; }
+        .btn { background: none; border: none; cursor: pointer; color: var(--text-main); display: flex; align-items: center; padding: 8px; border-radius: 50%; }
+        .btn:hover { background: rgba(0,0,0,0.05); }
 
-        /* Modals (Search, Print) */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center; }
-        .search-box { background: var(--bg-paper); width: 95%; max-width: 600px; height: 80vh; border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; }
-        .search-header { padding: 15px; border-bottom: 1px solid #eee; display: flex; gap: 10px; }
-        .search-input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-        .search-results { flex: 1; overflow-y: auto; padding: 10px; }
-        .result-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
+        /* সাইড ক্লিক এরিয়া (পাতা উল্টানোর জন্য) */
+        .click-zone {
+            position: absolute; top: var(--header-height); bottom: var(--safe-bottom);
+            width: 15%; z-index: 50; cursor: pointer;
+        }
+        .zone-left { left: 0; }
+        .zone-right { right: 0; }
         
-        .book-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding: 10px; }
-        .book-card { background: var(--bg-paper); padding: 20px; border-radius: 8px; cursor: pointer; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        
-        @media print { .controls, .no-print { display: none; } .reader-area { overflow: visible; } }
-        .loader { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #000; color: #fff; padding: 10px 20px; border-radius: 20px; z-index: 3000; }
+        /* পেজ নম্বর ইন্ডিকেটর */
+        .page-info {
+            position: fixed; bottom: 80px; width: 100%; text-align: center;
+            font-size: 12px; opacity: 0.6; pointer-events: none;
+        }
+
+        /* --- অন্যান্য --- */
+        .loader { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 10px 20px; border-radius: 20px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; justify-content: center; align-items: center; }
+        .search-box { background: var(--bg-paper); width: 90%; max-width: 500px; height: 70vh; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; }
+        .chapter-list-modal { overflow-y: auto; flex: 1; }
+        .chapter-item { padding: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer; }
+        .chapter-item:hover { background: rgba(0,0,0,0.03); }
+        .chapter-item.active { color: var(--accent); font-weight: bold; }
+
     </style>
 </head>
 <body>
@@ -187,323 +161,278 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo } = React;
+        const { useState, useEffect, useRef, useLayoutEffect } = React;
 
-        // --- UTILS: Pagination ---
-        // Splits text roughly into pages
-        const paginateText = (text, limit) => {
-            if (!text) return [];
-            const lines = text.split('\n');
-            let pages = [];
-            let current = "";
-            let count = 0;
-            
-            lines.forEach(line => {
-                if (count + line.length > limit && count > 100) {
-                    pages.push(current);
-                    current = line + "\n";
-                    count = line.length;
-                } else {
-                    current += line + "\n";
-                    count += line.length;
-                }
-            });
-            if (current) pages.push(current);
-            return pages;
-        };
-
-        // --- COMPONENT: Markdown Renderer ---
-        const MarkdownViewer = ({ content, fontSize }) => {
-            const containerRef = useRef();
-            const html = useMemo(() => marked.parse(content || ''), [content]);
+        // --- Markdown Viewer (Column Based) ---
+        const MarkdownViewer = ({ content, fontSize, onRelayout }) => {
+            const rootRef = useRef();
 
             useEffect(() => {
-                if (containerRef.current && window.renderMathInElement) {
-                    window.renderMathInElement(containerRef.current, {
-                        delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}],
-                        throwOnError: false
-                    });
+                if (rootRef.current) {
+                    rootRef.current.innerHTML = marked.parse(content || '');
+                    // KaTeX রেন্ডার
+                    if (window.renderMathInElement) {
+                        window.renderMathInElement(rootRef.current, {
+                            delimiters: [
+                                {left: '$$', right: '$$', display: true},
+                                {left: '$', right: '$', display: false}
+                            ],
+                            throwOnError: false
+                        });
+                    }
+                    // ইমেজ লোড হলে লেআউট আপডেট করার জন্য
+                    const imgs = rootRef.current.querySelectorAll('img');
+                    imgs.forEach(img => img.onload = onRelayout);
+                    onRelayout();
                 }
-            }, [html]);
-
-            return <div ref={containerRef} className="markdown-body" style={{fontSize: fontSize}} dangerouslySetInnerHTML={{ __html: html }} />;
-        };
-
-        // --- COMPONENT: FlipBook Engine (NEW & FIXED) ---
-        const FlipBook = ({ content, fontSize, onNextChap, onPrevChap }) => {
-            const isMobile = window.innerWidth < 850;
-            const charLimit = isMobile ? 600 : 900;
-            
-            // Prepare pages
-            const pagesText = useMemo(() => paginateText(content, charLimit), [content, charLimit]);
-            
-            // Create "Sheets" (Double sided)
-            // Sheet 0: Page 1 (Front), Page 2 (Back)
-            // Sheet 1: Page 3 (Front), Page 4 (Back)
-            const sheets = useMemo(() => {
-                let s = [];
-                for(let i=0; i<pagesText.length; i+=2) {
-                    s.push({
-                        front: pagesText[i],
-                        back: pagesText[i+1] || null
-                    });
-                }
-                return s;
-            }, [pagesText]);
-
-            const [currentSheet, setCurrentSheet] = useState(0); // 0 means closed cover, 1 means first sheet flipped
-
-            useEffect(() => { setCurrentSheet(0); }, [content]); // Reset on chapter change
-
-            const totalSheets = sheets.length;
-
-            const next = () => {
-                if (currentSheet < totalSheets) {
-                    setCurrentSheet(prev => prev + 1);
-                } else {
-                    if (onNextChap) onNextChap();
-                }
-            };
-
-            const prev = () => {
-                if (currentSheet > 0) {
-                    setCurrentSheet(prev => prev - 1);
-                } else {
-                    if (onPrevChap) onPrevChap();
-                }
-            };
-
-            // Keyboard
-            useEffect(() => {
-                const handler = (e) => {
-                    if(e.key === 'ArrowRight') next();
-                    if(e.key === 'ArrowLeft') prev();
-                };
-                window.addEventListener('keydown', handler);
-                return () => window.removeEventListener('keydown', handler);
-            }, [currentSheet, totalSheets]);
-
-            // Determine if book is "Open" (shifted center)
-            const isOpen = !isMobile && currentSheet > 0 && currentSheet < totalSheets;
+            }, [content]);
 
             return (
-                <div className="flip-scene">
-                    <div className={`flip-book ${isOpen ? 'open' : ''}`}>
-                        {sheets.map((sheet, index) => {
-                            // Logic:
-                            // Index 0 is the "First" sheet physically.
-                            // If currentSheet > index, this sheet is flipped to the left.
-                            // If currentSheet <= index, this sheet is on the right.
-                            const isFlipped = currentSheet > index;
-                            
-                            // Z-Index is critical
-                            // If NOT flipped: Lower index = Higher Z (Stacked on right)
-                            // If FLIPPED: Higher index = Higher Z (Stacked on left)
-                            let zIndex = isFlipped ? index : (totalSheets - index);
-
-                            return (
-                                <div 
-                                    key={index} 
-                                    className={`flip-page ${isFlipped ? 'flipped' : ''}`}
-                                    style={{zIndex: zIndex}}
-                                    onClick={() => isFlipped ? prev() : next()}
-                                >
-                                    <div className="page-face front">
-                                        <div className="page-content">
-                                            <MarkdownViewer content={sheet.front} fontSize={fontSize} />
-                                        </div>
-                                        <div className="page-footer">{index * 2 + 1}</div>
-                                    </div>
-                                    <div className="page-face back">
-                                        <div className="page-content">
-                                            {sheet.back ? 
-                                                <MarkdownViewer content={sheet.back} fontSize={fontSize} /> : 
-                                                <div style={{display:'flex', height:'100%', alignItems:'center', justifyContent:'center', opacity:0.5}}>
-                                                    <span>End of Chapter <br/> Click to continue</span>
-                                                </div>
-                                            }
-                                        </div>
-                                        <div className="page-footer">{index * 2 + 2}</div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                    {/* Mobile Touch Areas */}
-                    {isMobile && <div style={{position:'absolute', top:0, left:0, width:'30%', height:'100%', zIndex:100}} onClick={(e)=>{e.stopPropagation(); prev();}}></div>}
-                    {isMobile && <div style={{position:'absolute', top:0, right:0, width:'30%', height:'100%', zIndex:100}} onClick={(e)=>{e.stopPropagation(); next();}}></div>}
-                </div>
+                <div 
+                    ref={rootRef}
+                    className="markdown-columns" 
+                    style={{ fontSize: `${fontSize}px` }}
+                />
             );
         };
 
-        // --- MAIN APP ---
         function App() {
+            // Data & Routing
             const [books, setBooks] = useState([]);
             const [activeBook, setActiveBook] = useState(null);
             const [activeChapter, setActiveChapter] = useState(null);
+            
+            // View & Theme
             const [mdContent, setMdContent] = useState('');
-            const [viewMode, setViewMode] = useState('home'); 
-            const [readingMode, setReadingMode] = useState('scroll'); // 'scroll' or 'flip'
-            const [theme, setTheme] = useState('white');
+            const [theme, setTheme] = useState('white'); 
             const [fontSize, setFontSize] = useState(18);
-            const [loading, setLoading] = useState(false);
-            const [showSearch, setShowSearch] = useState(false);
-            const [searchQuery, setSearchQuery] = useState('');
-            const [toast, setToast] = useState('');
+            const [loading, setLoading] = useState(true);
+            const [showToc, setShowToc] = useState(false); // Table of Contents
 
-            // Load Database
+            // Pagination Logic
+            const viewerRef = useRef(null);
+            const [currentPage, setCurrentPage] = useState(1);
+            const [totalPages, setTotalPages] = useState(1);
+            const [columnsPerScreen, setColumnsPerScreen] = useState(1);
+
+            // --- ১. ডেটা ফেচ এবং অটো লোড (Initial Load) ---
             useEffect(() => {
                 fetch('books/db.json')
                     .then(res => res.json())
-                    .then(data => setBooks(data))
-                    .catch(() => console.log("DB not found"));
+                    .then(data => { 
+                        setBooks(data);
+                        
+                        // URL প্যারাম চেক
+                        const params = new URLSearchParams(window.location.search);
+                        const bId = params.get('book');
+                        
+                        if (bId) {
+                            // লিংক থেকে লোড
+                            const book = data.find(b => b.id === bId);
+                            if (book) loadInitial(book, params.get('chapter'));
+                        } else if (data.length > 0) {
+                            // ** অটো লোড প্রথম বই **
+                            loadInitial(data[0], null);
+                        }
+                    })
+                    .catch(err => {
+                        console.error("books.json failed", err);
+                        setLoading(false);
+                    });
             }, []);
 
-            // Theme Sync
-            useEffect(() => document.body.className = `theme-${theme}`, [theme]);
+            // থিম হ্যান্ডলিং
+            useEffect(() => {
+                document.body.className = `theme-${theme}`;
+                document.getElementById("theme-color").setAttribute("content", theme==='black'?'#1e1e1e':'#ffffff');
+            }, [theme]);
 
-            // Navigation Helpers
-            const loadChapter = (book, chapter) => {
+            // --- পেজিনেশন লেআউট ক্যালকুলেশন ---
+            const updateLayoutInfo = () => {
+                if (!viewerRef.current) return;
+                const container = viewerRef.current.querySelector('.markdown-columns');
+                if (!container) return;
+
+                const screenW = container.clientWidth;
+                const scrollW = container.scrollWidth;
+                
+                // উইন্ডো সাইজ অনুযায়ী কলাম সংখ্যা ডিটেক্ট করা
+                const isTwoPage = window.innerWidth >= 768 || window.matchMedia("(orientation: landscape)").matches;
+                setColumnsPerScreen(isTwoPage ? 2 : 1);
+
+                // মোট পৃষ্ঠা সংখ্যা বের করা
+                // scrollWidth / clientWidth gives total screens
+                const pages = Math.ceil(scrollW / screenW);
+                setTotalPages(Math.max(1, pages));
+            };
+
+            // উইন্ডো রিসাইজ হলে লেআউট আপডেট
+            useEffect(() => {
+                window.addEventListener('resize', updateLayoutInfo);
+                return () => window.removeEventListener('resize', updateLayoutInfo);
+            }, []);
+
+            // কনটেন্ট লোড বা ফন্ট চেঞ্জ হলে লেআউট আপডেট
+            useEffect(() => {
+                // একটু দেরি করে আপডেট করা যাতে DOM রেন্ডার হয়
+                setTimeout(updateLayoutInfo, 100); 
+                setTimeout(updateLayoutInfo, 500); // ইমেজের জন্য সেফটি
+            }, [mdContent, fontSize]);
+
+
+            // --- চ্যাপ্টার লোড ফাংশন ---
+            const loadInitial = (book, chapId) => {
                 setActiveBook(book);
-                setActiveChapter(chapter);
+                const chap = chapId ? book.chapters.find(c => c.id === chapId) : book.chapters[0];
+                loadChapter(book, chap);
+            };
+
+            const loadChapter = (book, chapter) => {
+                if (!chapter) return;
                 setLoading(true);
+                setActiveChapter(chapter);
+                setCurrentPage(1); // নতুন চ্যাপ্টারে পৃষ্ঠা ১ এ রিসেট
+
                 fetch(`${book.folder}/${chapter.file}`)
                     .then(res => res.text())
                     .then(text => {
-                        setMdContent(text);
-                        setViewMode('read');
+                        // টাইটেল যুক্ত করা মার্কডাউনের শুরুতে
+                        const contentWithTitle = `# ${chapter.title}\n\n${text}`;
+                        setMdContent(contentWithTitle);
                         setLoading(false);
+                        
+                        // স্ক্রল রিসেট
+                        if(viewerRef.current) {
+                            const container = viewerRef.current.querySelector('.markdown-columns');
+                            if(container) container.scrollLeft = 0;
+                        }
                     })
                     .catch(() => {
-                        setMdContent("# Content Not Found");
-                        setViewMode('read');
+                        setMdContent("# Error Loading File");
                         setLoading(false);
                     });
             };
 
-            const changeChapter = (dir) => {
-                if(!activeBook || !activeChapter) return;
+            // --- নেভিগেশন (পাতা উল্টানো) ---
+            const turnPage = (direction) => {
+                const container = viewerRef.current.querySelector('.markdown-columns');
+                if (!container) return;
+
+                const screenW = container.clientWidth;
+                
+                if (direction === 'next') {
+                    if (currentPage < totalPages) {
+                        // পরের পাতায় যান
+                        container.scrollBy({ left: screenW, behavior: 'smooth' });
+                        setCurrentPage(p => p + 1);
+                    } else {
+                        // পরের চ্যাপ্টার লোড করুন
+                        goToNextChapter();
+                    }
+                } else {
+                    if (currentPage > 1) {
+                        // আগের পাতায় যান
+                        container.scrollBy({ left: -screenW, behavior: 'smooth' });
+                        setCurrentPage(p => p - 1);
+                    } else {
+                        // আগের চ্যাপ্টার লোড করুন
+                        goToPrevChapter();
+                    }
+                }
+            };
+
+            const goToNextChapter = () => {
                 const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
-                if (dir === 'next' && idx < activeBook.chapters.length - 1) {
+                if (idx < activeBook.chapters.length - 1) {
                     loadChapter(activeBook, activeBook.chapters[idx + 1]);
-                } else if (dir === 'prev' && idx > 0) {
+                } else {
+                    alert("বই শেষ!");
+                }
+            };
+
+            const goToPrevChapter = () => {
+                const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
+                if (idx > 0) {
+                    // আগের চ্যাপ্টার লোড হলে শেষ পৃষ্ঠায় নিয়ে যাওয়া একটু জটিল, তাই শুরুতে লোড করছি
                     loadChapter(activeBook, activeBook.chapters[idx - 1]);
                 }
             };
 
-            // Search Logic (Basic)
-            const filteredBooks = books.filter(b => b.title.toLowerCase().includes(searchQuery.toLowerCase()));
+            // --- UI Components ---
+
+            const TableOfContents = () => (
+                <div className="modal-overlay" onClick={(e) => e.target.className.includes('overlay') && setShowToc(false)}>
+                    <div className="search-box">
+                        <h3 style={{borderBottom:'1px solid #ddd', paddingBottom:'10px'}}>সূচিপত্র</h3>
+                        <div className="chapter-list-modal">
+                            {activeBook && activeBook.chapters.map(chap => (
+                                <div key={chap.id} 
+                                     className={`chapter-item ${activeChapter?.id === chap.id ? 'active' : ''}`}
+                                     onClick={() => { loadChapter(activeBook, chap); setShowToc(false); }}>
+                                    {chap.title}
+                                </div>
+                            ))}
+                        </div>
+                        <button onClick={() => setShowToc(false)} className="btn" style={{width:'100%', justifyContent:'center', marginTop:'10px', borderRadius:'5px', background:'#eee'}}>বন্ধ করুন</button>
+                    </div>
+                </div>
+            );
 
             return (
                 <div className="app-container">
-                    {loading && <div className="loader">Loading...</div>}
                     
-                    {/* --- HOME --- */}
-                    {viewMode === 'home' && (
-                        <div className="reader-area">
-                            <div className="book-sheet" style={{textAlign:'center', display:'flex', flexDirection:'column', justifyContent:'center'}}>
-                                <h1 style={{color:'var(--accent)'}}>LIBRARY</h1>
-                                <div className="book-grid">
-                                    {books.map(b => (
-                                        <div key={b.id} className="book-card" onClick={() => {setActiveBook(b); setViewMode('index');}}>
-                                            <h3>{b.title}</h3>
-                                            <p>{b.chapters.length} Chapters</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+                    {/* টপ বার */}
+                    <div className="top-bar">
+                        <div className="book-title">
+                            {activeBook ? activeBook.title : 'Loading...'} 
+                            {activeChapter && ` - ${activeChapter.title}`}
                         </div>
-                    )}
-
-                    {/* --- INDEX --- */}
-                    {viewMode === 'index' && activeBook && (
-                        <div className="reader-area">
-                            <div className="book-sheet">
-                                <h2 style={{textAlign:'center'}}>{activeBook.title}</h2>
-                                <hr/>
-                                {activeBook.chapters.map(c => (
-                                    <div key={c.id} style={{padding:'15px', borderBottom:'1px dashed #ccc', cursor:'pointer', display:'flex', justifyContent:'space-between'}} onClick={() => loadChapter(activeBook, c)}>
-                                        <span>{c.title}</span> <span className="material-icons">chevron_right</span>
-                                    </div>
-                                ))}
-                                <button onClick={() => setViewMode('home')} style={{marginTop:'20px', padding:'10px', width:'100%'}}>Back</button>
-                            </div>
+                        <div style={{display:'flex'}}>
+                             {/* বুক লিস্ট ড্রপডাউন সিমুলেশন */}
+                            <select 
+                                onChange={(e) => {
+                                    const b = books.find(x => x.id === e.target.value);
+                                    if(b) loadInitial(b, null);
+                                }}
+                                value={activeBook?.id || ''}
+                                style={{border:'none', background:'transparent', outline:'none', fontWeight:'bold', maxWidth:'120px'}}
+                            >
+                                {books.map(b => <option key={b.id} value={b.id}>{b.title}</option>)}
+                            </select>
                         </div>
-                    )}
-
-                    {/* --- READER --- */}
-                    {viewMode === 'read' && (
-                        <div className={`reader-area ${readingMode === 'flip' ? 'flip-mode' : ''}`}>
-                            {readingMode === 'scroll' ? (
-                                /* SCROLL MODE (ORIGINAL) */
-                                <div className="book-sheet">
-                                    <div style={{textAlign:'center', opacity:0.5, marginBottom:20}}>{activeChapter.title}</div>
-                                    <MarkdownViewer content={mdContent} fontSize={fontSize + 'px'} />
-                                    <div className="chapter-nav no-print">
-                                        <button className="nav-btn" onClick={() => changeChapter('prev')}>Previous</button>
-                                        <button className="nav-btn" onClick={() => changeChapter('next')}>Next</button>
-                                    </div>
-                                </div>
-                            ) : (
-                                /* FLIP MODE (NEW) */
-                                <FlipBook 
-                                    content={mdContent} 
-                                    fontSize={fontSize + 'px'} 
-                                    onNextChap={() => changeChapter('next')}
-                                    onPrevChap={() => changeChapter('prev')}
-                                />
-                            )}
-                        </div>
-                    )}
-
-                    {/* --- CONTROLS --- */}
-                    <div className="controls no-print">
-                        <button className="btn" onClick={() => setViewMode('home')}><span className="material-icons">home</span></button>
-                        
-                        {viewMode === 'read' && (
-                            <>
-                                <div className="v-sep"></div>
-                                <button className="btn" onClick={() => setViewMode('index')}><span className="material-icons">list</span></button>
-                                {/* FLIP TOGGLE */}
-                                <button 
-                                    className={`btn ${readingMode === 'flip' ? 'active' : ''}`} 
-                                    onClick={() => setReadingMode(m => m === 'scroll' ? 'flip' : 'scroll')}
-                                    title="Toggle Flipbook"
-                                >
-                                    <span className="material-icons">auto_stories</span>
-                                </button>
-                                <div className="v-sep"></div>
-                                <button className="btn" onClick={() => setFontSize(f => f-2)}>A-</button>
-                                <button className="btn" onClick={() => setFontSize(f => f+2)}>A+</button>
-                            </>
-                        )}
-                        
-                        <div className="v-sep"></div>
-                        <button className="btn" onClick={() => setShowSearch(true)}><span className="material-icons">search</span></button>
-                        <button className="btn" onClick={() => setTheme(t => t==='white'?'sepia':t==='sepia'?'black':'white')}>
-                            <span className="material-icons">brightness_6</span>
-                        </button>
                     </div>
 
-                    {/* --- SEARCH MODAL --- */
-                    showSearch && (
-                        <div className="modal-overlay" onClick={(e) => e.target.className === 'modal-overlay' && setShowSearch(false)}>
-                            <div className="search-box">
-                                <div className="search-header">
-                                    <input className="search-input" placeholder="Search Books..." autoFocus value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} />
-                                    <button className="btn" onClick={() => setShowSearch(false)}><span className="material-icons">close</span></button>
-                                </div>
-                                <div className="search-results">
-                                    {filteredBooks.map(b => (
-                                        <div key={b.id} className="result-item" onClick={() => {setActiveBook(b); setViewMode('index'); setShowSearch(false);}}>
-                                            <strong>{b.title}</strong><br/><small>{b.chapters.length} Chapters</small>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {/* মেইন রিডার এরিয়া */}
+                    <div className="reader-viewport" ref={viewerRef}>
+                        {loading && <div className="loader">লোড হচ্ছে...</div>}
+                        
+                        {/* ক্লিক জোন (সহজে পাতা উল্টানোর জন্য) */}
+                        <div className="click-zone zone-left" onClick={() => turnPage('prev')}></div>
+                        <div className="click-zone zone-right" onClick={() => turnPage('next')}></div>
 
+                        <MarkdownViewer 
+                            content={mdContent} 
+                            fontSize={fontSize} 
+                            onRelayout={updateLayoutInfo}
+                        />
+                    </div>
+
+                    {/* পেজ ইনফো */}
+                    <div className="page-info">
+                        পাতা {currentPage} / {totalPages}
+                    </div>
+
+                    {/* বটম কন্ট্রোলস */}
+                    <div className="controls">
+                        <button className="btn" onClick={() => setShowToc(true)} title="সূচিপত্র"><span className="material-icons">format_list_bulleted</span></button>
+                        <div style={{width:'1px', height:'20px', background:'#ccc', margin:'0 5px'}}></div>
+                        <button className="btn" onClick={() => setFontSize(f => Math.max(14, f-2))}><span style={{fontSize:'12px', fontWeight:'bold'}}>A-</span></button>
+                        <button className="btn" onClick={() => setFontSize(f => Math.min(32, f+2))}><span style={{fontSize:'16px', fontWeight:'bold'}}>A+</span></button>
+                        <div style={{width:'1px', height:'20px', background:'#ccc', margin:'0 5px'}}></div>
+                        <button className="btn" onClick={() => setTheme(t => t==='white'?'sepia':t==='sepia'?'black':'white')}><span className="material-icons">brightness_6</span></button>
+                    </div>
+
+                    {showToc && <TableOfContents />}
                 </div>
             );
         }
@@ -512,4 +441,4 @@
         root.render(<App />);
     </script>
 </body>
-    </html>
+</html>

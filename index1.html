@@ -1,253 +1,301 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Flipbook</title>
+    <title>Digital Library & Flipbook</title>
     
-    <!-- লাইব্রেরি (ইন্টারনেট কানেকশন প্রয়োজন, অথবা লোকাল ফাইলে সেভ করে নিন) -->
+    <!-- লাইব্রেরি (ইন্টারনেট কানেকশন প্রয়োজন) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Turn.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/3/turn.min.js"></script>
-    <!-- Markdown Parser -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- গুগল ফন্ট -->
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <style>
-        body {
-            overflow: hidden;
-            background: #333;
-            margin: 0;
-            padding: 0;
-            font-family: 'Crimson Text', serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+        /* --- বেসিক সেটআপ --- */
+        body { margin: 0; padding: 0; background: #f4f4f4; font-family: 'Crimson Text', serif; overflow: hidden; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        #flipbook {
-            width: 800px;
-            height: 500px;
-            transition: margin-left 0.2s;
-        }
-
-        #flipbook .page {
-            width: 400px;
-            height: 500px;
-            background-color: #fdf6e3;
-            color: #333;
-            overflow: hidden;
-            box-shadow: inset -5px 0 20px rgba(0,0,0,0.1);
-            font-size: 16px;
-            line-height: 1.6;
-        }
-
-        /* কনটেন্ট প্যাডিং */
-        .page-content {
-            padding: 40px;
-            height: 100%;
-            overflow: hidden; /* টেক্সট বেশি হলে যেন পেজের বাইরে না যায় */
-            text-align: justify;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-
-        /* কভার পেজ স্টাইল */
-        .hard {
-            background: #4a192c !important;
-            color: #d4af37 !important;
-            font-weight: bold;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            border: 4px double #d4af37;
-        }
-
-        .hard h1 { font-size: 2.5rem; margin: 0; text-transform: uppercase; }
-        .hard p { opacity: 0.8; }
-
-        /* মোবাইল রেসপন্সিভ */
-        @media (max-width: 768px) {
-            #flipbook {
-                width: 90vw;
-                height: 80vh;
-                margin: 0 auto;
-            }
-            #flipbook .page {
-                width: 100%; /* মোবাইলে এক পাতা */
-                height: 100%;
-            }
-        }
-
-        .loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #222; color: #fff; display: flex; 
-            justify-content: center; align-items: center; z-index: 999;
+        /* --- ১. হোম স্ক্রিন (বইয়ের তালিকা) --- */
+        #home-view {
+            width: 100%; height: 100vh; overflow-y: auto;
+            padding: 40px 20px; text-align: center;
+            background: #eaddcf; /* ভিন্টেজ ব্যাকগ্রাউন্ড */
         }
         
-        .controls {
-            position: fixed; bottom: 20px; z-index: 1000;
-            background: rgba(255,255,255,0.9); padding: 10px 20px;
-            border-radius: 30px; display: flex; gap: 10px;
+        .library-header { font-size: 2.5rem; color: #4a192c; margin-bottom: 30px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
+
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px; max-width: 1000px; margin: 0 auto;
         }
-        button { cursor: pointer; padding: 5px 15px; }
+
+        /* বইয়ের কার্ড ডিজাইন */
+        .book-card {
+            background: #4a192c; color: #d4af37;
+            border-radius: 5px; cursor: pointer;
+            height: 280px; position: relative;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: transform 0.3s;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            border-left: 10px solid #2c0e1a; /* বইয়ের স্পাইন */
+            padding: 20px;
+        }
+        .book-card:hover { transform: translateY(-10px) scale(1.02); }
+        .book-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; line-height: 1.2; }
+        .book-info { font-size: 0.9rem; opacity: 0.8; font-family: 'Lato', sans-serif; }
+
+        /* --- ২. রিডার স্ক্রিন (ফ্লিপবুক) --- */
+        #reader-view {
+            display: none; /* শুরুতে লুকানো থাকবে */
+            width: 100%; height: 100vh;
+            background: #333;
+            justify-content: center; align-items: center;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* ফ্লিপবুক কন্টেইনার */
+        #flipbook { width: 800px; height: 500px; transition: margin 0.3s; }
+        
+        .page {
+            background-color: #fdf6e3; color: #333;
+            box-shadow: inset -5px 0 20px rgba(0,0,0,0.05);
+            font-size: 18px; line-height: 1.6; text-align: justify;
+        }
+        .page-content { padding: 40px; height: 100%; overflow: hidden; border: 1px solid #ddd; }
+        
+        /* কভার পেজ স্টাইল */
+        .page.hard {
+            background: #4a192c !important; color: #d4af37 !important;
+            border: 5px double #d4af37; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+        }
+
+        /* --- কন্ট্রোল বাটনস --- */
+        .back-btn {
+            position: absolute; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(255,255,255,0.2); color: #fff; border: 1px solid #fff;
+            padding: 8px 15px; border-radius: 30px; cursor: pointer;
+            display: flex; align-items: center; gap: 5px; font-family: 'Lato', sans-serif;
+        }
+        .back-btn:hover { background: #fff; color: #333; }
+
+        .nav-controls {
+            position: absolute; bottom: 20px; z-index: 1000;
+            display: flex; gap: 20px;
+        }
+        .nav-btn {
+            background: #fff; border: none; padding: 10px; border-radius: 50%;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        /* --- মোবাইল রেসপন্সিভ --- */
+        @media (max-width: 768px) {
+            #flipbook { width: 90vw; height: 75vh; }
+            .page-content { padding: 25px; font-size: 16px; }
+            .library-header { font-size: 1.8rem; }
+        }
+
+        /* লোডার */
+        .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: #fff; display: none; justify-content: center; align-items: center; z-index: 2000; }
     </style>
 </head>
 <body>
 
-    <div class="loader" id="loader">বই লোড হচ্ছে...</div>
+    <!-- লোডার -->
+    <div class="loader" id="loader">লোড হচ্ছে...</div>
 
-    <!-- ফ্লিপবুক কন্টেইনার -->
-    <div id="flipbook">
-        <!-- জাভাস্ক্রিপ্ট দিয়ে এখানে পেজ ঢোকানো হবে -->
+    <!-- ১. হোম ভিউ (বইয়ের তালিকা) -->
+    <div id="home-view">
+        <div class="library-header">MY LIBRARY</div>
+        <div class="book-grid" id="book-list">
+            <!-- জাভাস্ক্রিপ্ট দিয়ে বই এখানে আসবে -->
+        </div>
     </div>
 
-    <div class="controls">
-        <button onclick="$('#flipbook').turn('previous')">Previous</button>
-        <button onclick="$('#flipbook').turn('next')">Next</button>
+    <!-- ২. রিডার ভিউ (ফ্লিপবুক) -->
+    <div id="reader-view">
+        <button class="back-btn" onclick="goHome()">
+            <span class="material-icons">arrow_back</span> Back to Library
+        </button>
+
+        <div id="flipbook"></div>
+
+        <div class="nav-controls">
+            <button class="nav-btn" onclick="$('#flipbook').turn('previous')"><span class="material-icons">west</span></button>
+            <button class="nav-btn" onclick="$('#flipbook').turn('next')"><span class="material-icons">east</span></button>
+        </div>
     </div>
 
     <script>
-        // --- ১. ডাটা লোড করার ফাংশন ---
-        $(document).ready(function() {
-            
-            // books.json লোড করা
-            $.getJSON('books/db.json', function(books) {
-                if(books.length > 0) {
-                    const firstBook = books[0];
-                    loadBook(firstBook);
-                } else {
-                    alert("কোনো বই পাওয়া যায়নি!");
-                }
-            }).fail(function() {
-                console.log("books.json পাওয়া যায়নি, ডামি ডাটা ব্যবহার করা হচ্ছে...");
-                // টেস্টিং এর জন্য ডামি ডাটা (যদি আপনার ফাইল না থাকে)
-                loadBook({
-                    title: "ডেমো বই",
-                    chapters: [{title: "অধ্যায় ১", file: "chapter1.md"}]
-                });
-            });
+        let allBooks = [];
 
+        $(document).ready(function() {
+            // ১. ডাটাবেজ থেকে বই আনা
+            $.getJSON('books/db.json', function(data) {
+                allBooks = data;
+                renderBookList(data);
+            }).fail(function() {
+                // ফাইল না পেলে ডামি ডাটা (টেস্টিং এর জন্য)
+                console.log("JSON not found, loading dummy data");
+                allBooks = [
+                    { id: "1", title: "Demo Book One", chapters: [{file: "sample.md", title: "Chapter 1"}] },
+                    { id: "2", title: "The Jungle Book", chapters: [{file: "sample.md", title: "Start"}] },
+                    { id: "3", title: "Physics 101", chapters: [{file: "sample.md", title: "Intro"}] }
+                ];
+                renderBookList(allBooks);
+            });
         });
 
-        // --- ২. বই লোড এবং পেজ বানানোর লজিক ---
-        function loadBook(book) {
-            const chapter = book.chapters[0]; // প্রথম অধ্যায়
-            const filePath = book.folder ? `${book.folder}/${chapter.file}` : chapter.file;
-
-            // মার্কডাউন ফাইল ফেচ করা
-            fetch(filePath)
-            .then(response => {
-                if(!response.ok) throw new Error("ফাইল পাওয়া যায়নি");
-                return response.text();
-            })
-            .then(text => {
-                const htmlContent = marked.parse(text);
-                createFlipbook(book.title, htmlContent);
-            })
-            .catch(err => {
-                // ফাইল না পেলে ডামি টেক্সট দিয়ে বই বানাবে
-                const dummyText = `
-                    <p>দুঃখিত, ফাইল লোড করা যায়নি।</p>
-                    <p>আপনার ফোল্ডারে ফাইল ঠিকঠাক আছে কিনা দেখুন।</p>
-                    <p>${err}</p>
-                    <p>লরেম ইপসাম বা ডামি টেক্সট...</p>
+        // --- বইয়ের লিস্ট তৈরি ---
+        function renderBookList(books) {
+            const list = $('#book-list');
+            list.empty();
+            books.forEach(book => {
+                const html = `
+                    <div class="book-card" onclick="openBook('${book.id}')">
+                        <div class="book-title">${book.title}</div>
+                        <div class="book-info">${book.chapters.length} Chapters</div>
+                        <div style="margin-top:auto; font-size:2rem;">❦</div>
+                    </div>
                 `;
-                createFlipbook(book.title, dummyText);
+                list.append(html);
             });
         }
 
-        // --- ৩. টেক্সট কেটে কেটে পেজ বানানো ---
-        function createFlipbook(title, contentHTML) {
+        // --- বই ওপেন করা ---
+        function openBook(bookId) {
+            const book = allBooks.find(b => b.id === bookId);
+            if (!book) return;
+
+            $('#loader').css('display', 'flex');
+            
+            // ফাইল লোড (প্রথম চ্যাপ্টার)
+            const chapter = book.chapters[0];
+            const filePath = book.folder ? `${book.folder}/${chapter.file}` : chapter.file;
+
+            fetch(filePath)
+                .then(res => {
+                    if(!res.ok) throw new Error("File not found");
+                    return res.text();
+                })
+                .then(text => {
+                    setupFlipbook(book.title, marked.parse(text));
+                    // ভিউ চেঞ্জ
+                    $('#home-view').hide();
+                    $('#reader-view').css('display', 'flex');
+                    $('#loader').hide();
+                })
+                .catch(err => {
+                    // এরর হ্যান্ডলিং (ডামি টেক্সট)
+                    const dummy = `<h1>${book.title}</h1><p>দুঃখিত, ফাইলটি লোড করা যায়নি। এটি একটি ডামি টেক্সট।</p>` + 
+                                  `<p>Lorem ipsum dolor sit amet...</p>`.repeat(20);
+                    setupFlipbook(book.title, dummy);
+                    $('#home-view').hide();
+                    $('#reader-view').css('display', 'flex');
+                    $('#loader').hide();
+                });
+        }
+
+        // --- ফ্লিপবুক সেটআপ (সবচেয়ে গুরুত্বপূর্ণ অংশ) ---
+        function setupFlipbook(title, htmlContent) {
             const flipbook = $('#flipbook');
-            flipbook.html(''); // আগের সব ক্লিয়ার
+            
+            // আগের বই থাকলে ডিলিট করা (Destroy)
+            if (flipbook.turn('is')) {
+                flipbook.turn('destroy');
+                $(window).unbind('keydown'); // ইভেন্ট রিমুভ
+            }
+            
+            flipbook.html(''); // HTML ক্লিয়ার
 
-            // কভার পেজ যোগ করা
-            const cover = `
-                <div class="hard">
-                    <h1>${title}</h1>
-                    <p>ডায়নামিক লাইব্রেরি</p>
-                    <small>~ পাতা উল্টান ~</small>
+            // ১. কভার পেজ যোগ
+            flipbook.append(`
+                <div class="page hard">
+                    <h1 style="font-size: 2rem; margin:0;">${title}</h1>
+                    <p>Tap to read</p>
                 </div>
-                <div class="hard"></div>
-            `;
-            flipbook.append(cover);
+                <div class="page hard"></div>
+            `);
 
-            // কনটেন্টকে ছোট ছোট ভাগে ভাগ করা (পেজ বানানোর জন্য)
-            // আমরা HTML কে প্যারাগ্রাফ (p) ট্যাগে ভাগ করে পেজে ঢোকাবো
+            // ২. কনটেন্ট পেজ বানানো (প্যারাগ্রাফ অনুযায়ী ভাগ করা)
             const parser = new DOMParser();
-            const doc = parser.parseFromString(contentHTML, 'text/html');
+            const doc = parser.parseFromString(htmlContent, 'text/html');
             const elements = Array.from(doc.body.children);
 
-            let currentPageContent = '';
-            let charCount = 0;
-            const maxCharsPerPage = 600; // প্রতি পেজে কতগুলো অক্ষর থাকবে
+            let pageContent = '';
+            let charLimit = $(window).width() < 768 ? 500 : 800; // মোবাইলে কম লেখা, পিসিতে বেশি
+            let currentCount = 0;
 
-            elements.forEach((el, index) => {
-                const html = el.outerHTML;
+            elements.forEach(el => {
                 const textLen = el.textContent.length;
-
-                // যদি পেজ ভরে যায়, তাহলে নতুন পেজ বানাও
-                if (charCount + textLen > maxCharsPerPage) {
-                    addPage(flipbook, currentPageContent);
-                    currentPageContent = '';
-                    charCount = 0;
+                // ইমেজ থাকলে আলাদা লজিক বা বড় টেক্সট হলে নতুন পেজ
+                if (currentCount + textLen > charLimit || el.tagName === 'IMG') {
+                    if (pageContent) addPage(flipbook, pageContent);
+                    pageContent = '';
+                    currentCount = 0;
                 }
-
-                currentPageContent += html;
-                charCount += textLen;
+                pageContent += el.outerHTML;
+                currentCount += textLen;
             });
+            if(pageContent) addPage(flipbook, pageContent);
 
-            // বাকি থাকা কন্টেন্ট শেষ পেজে
-            if (currentPageContent) {
-                addPage(flipbook, currentPageContent);
-            }
+            // ৩. শেষ পেজ (ব্যাক কভার)
+            flipbook.append('<div class="page hard"></div><div class="page hard">THE END</div>');
 
-            // ব্যাক কভার
-            flipbook.append('<div class="hard"></div><div class="hard">সমাপ্ত</div>');
-
-            // --- Turn.js চালু করা ---
+            // ৪. Turn.js চালু করা
             initTurnJs();
-            $('#loader').hide();
         }
 
         function addPage(container, content) {
-            container.append(`
-                <div class="page">
-                    <div class="page-content">
-                        ${content}
-                    </div>
-                </div>
-            `);
+            container.append(`<div class="page"><div class="page-content">${content}</div></div>`);
         }
 
-        // --- ৪. Turn.js ইনিশিয়ালাইজেশন ---
         function initTurnJs() {
             const isMobile = $(window).width() < 768;
             
             $('#flipbook').turn({
                 width: isMobile ? $(window).width() * 0.9 : 800,
-                height: isMobile ? $(window).height() * 0.8 : 500,
+                height: isMobile ? $(window).height() * 0.75 : 500,
                 autoCenter: true,
-                display: isMobile ? 'single' : 'double', // মোবাইলে এক পাতা, পিসিতে দুই
+                display: isMobile ? 'single' : 'double', // মোবাইলে ১ পাতা, পিসিতে ২ পাতা
                 duration: 1000,
                 gradients: true,
                 elevation: 50
             });
 
-            // কিবোর্ড দিয়ে কন্ট্রোল
-            $(document).keydown(function(e){
+            // কিবোর্ড সাপোর্ট
+            $(window).bind('keydown', function(e) {
                 if (e.keyCode == 37) $('#flipbook').turn('previous');
                 if (e.keyCode == 39) $('#flipbook').turn('next');
             });
         }
 
-        // উইন্ডো রিসাইজ হলে এডজাস্ট করা
+        // --- হোমে ফিরে যাওয়া ---
+        function goHome() {
+            $('#reader-view').hide();
+            $('#home-view').show();
+            
+            // মেমোরি ক্লিন করার জন্য বই ডিলিট করা
+            if ($('#flipbook').turn('is')) {
+                $('#flipbook').turn('destroy');
+            }
+            $('#flipbook').html('');
+        }
+
+        // রিসাইজ হ্যান্ডেলিং
         $(window).resize(function() {
-             $('#flipbook').turn('resize');
+            if ($('#reader-view').is(':visible') && $('#flipbook').turn('is')) {
+                $('#flipbook').turn('resize');
+            }
         });
 
     </script>
 </body>
-</html>
+          </html>

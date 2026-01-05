@@ -133,80 +133,7 @@
         </div>
     </div>
 
-    <script>
-        let allBooks = [];
-
-        $(document).ready(function() {
-            // ১. ডাটাবেজ থেকে বই আনা
-            $.getJSON('books/db.json', function(data) {
-                allBooks = data;
-                renderBookList(data);
-            }).fail(function() {
-                // ফাইল না পেলে ডামি ডাটা (টেস্টিং এর জন্য)
-                console.log("JSON not found, loading dummy data");
-                allBooks = [
-                    { id: "1", title: "Demo Book One", chapters: [{file: "sample.md", title: "Chapter 1"}] },
-                    { id: "2", title: "The Jungle Book", chapters: [{file: "sample.md", title: "Start"}] },
-                    { id: "3", title: "Physics 101", chapters: [{file: "sample.md", title: "Intro"}] }
-                ];
-                renderBookList(allBooks);
-            });
-        });
-
-        // --- বইয়ের লিস্ট তৈরি ---
-        function renderBookList(books) {
-            const list = $('#book-list');
-            list.empty();
-            books.forEach(book => {
-                const html = `
-                    <div class="book-card" onclick="openBook('${book.id}')">
-                        <div class="book-title">${book.title}</div>
-                        <div class="book-info">${book.chapters.length} Chapters</div>
-                        <div style="margin-top:auto; font-size:2rem;">❦</div>
-                    </div>
-                `;
-                list.append(html);
-            });
-        }
-
-        // --- বই ওপেন করা ---
-        function openBook(bookId) {
-            const book = allBooks.find(b => b.id === bookId);
-            if (!book) return;
-
-            $('#loader').css('display', 'flex');
-            
-            // ফাইল লোড (প্রথম চ্যাপ্টার)
-            const chapter = book.chapters[0];
-            const filePath = book.folder ? `${book.folder}/${chapter.file}` : chapter.file;
-
-            fetch(filePath)
-                .then(res => {
-                    if(!res.ok) throw new Error("File not found");
-                    return res.text();
-                })
-                .then(text => {
-                    setupFlipbook(book.title, marked.parse(text));
-                    // ভিউ চেঞ্জ
-                    $('#home-view').hide();
-                    $('#reader-view').css('display', 'flex');
-                    $('#loader').hide();
-                })
-                .catch(err => {
-                    // এরর হ্যান্ডলিং (ডামি টেক্সট)
-                    const dummy = `<h1>${book.title}</h1><p>দুঃখিত, ফাইলটি লোড করা যায়নি। এটি একটি ডামি টেক্সট।</p>` + 
-                                  `<p>Lorem ipsum dolor sit amet...</p>`.repeat(20);
-                    setupFlipbook(book.title, dummy);
-                    $('#home-view').hide();
-                    $('#reader-view').css('display', 'flex');
-                    $('#loader').hide();
-                });
-        }
-
-        // --- ফ্লিপবুক সেটআপ (সবচেয়ে গুরুত্বপূর্ণ অংশ) ---
-        function setupFlipbook(title, htmlContent) {
-            const flipbook = $('#flipbook');
-            
+    
             // আগের বই থাকলে ডিলিট করা (Destroy)
             if (flipbook.turn('is')) {
                 flipbook.turn('destroy');
@@ -222,20 +149,117 @@
                     <p>Tap to read</p>
                 </div>
                 <div class="page hard"></div>
+                            <script>
+        let allBooks = [];
+
+        $(document).ready(function() {
+            // ১. ডাটাবেজ থেকে বই আনা
+            $.getJSON('books/db.json', function(data) {
+                allBooks = data;
+                renderBookList(data);
+            }).fail(function() {
+                console.log("JSON not found, loading dummy data");
+                allBooks = [
+                    { id: "1", title: "Demo Book One", chapters: [{file: "sample.md", title: "Chapter 1"}] },
+                    { id: "2", title: "The Jungle Book", chapters: [{file: "sample.md", title: "Start"}] },
+                    { id: "3", title: "Physics 101", chapters: [{file: "sample.md", title: "Intro"}] }
+                ];
+                renderBookList(allBooks);
+            });
+        });
+
+        function renderBookList(books) {
+            const list = $('#book-list');
+            list.empty();
+            books.forEach(book => {
+                const html = `
+                    <div class="book-card" onclick="openBook('${book.id}')">
+                        <div class="book-title">${book.title}</div>
+                        <div class="book-info">${book.chapters.length} Chapters</div>
+                        <div style="margin-top:auto; font-size:2rem;">❦</div>
+                    </div>
+                `;
+                list.append(html);
+            });
+        }
+
+        function openBook(bookId) {
+            const book = allBooks.find(b => b.id === bookId);
+            if (!book) return;
+
+            $('#loader').css('display', 'flex');
+            
+            const chapter = book.chapters[0];
+            const filePath = book.folder ? `${book.folder}/${chapter.file}` : chapter.file;
+
+            fetch(filePath)
+                .then(res => {
+                    if(!res.ok) throw new Error("File not found");
+                    return res.text();
+                })
+                .then(text => {
+                    // সমাধান ১: আগে ভিউ শো করতে হবে, তারপর ফ্লিপবুক বানাতে হবে
+                    $('#home-view').hide();
+                    $('#reader-view').css('display', 'flex');
+                    
+                    // ভিউ শো হওয়ার পর একটু সময় দিয়ে বই লোড করা ভালো (রেন্ডারিং এর জন্য)
+                    setTimeout(() => {
+                        setupFlipbook(book.title, marked.parse(text));
+                        $('#loader').hide();
+                    }, 100);
+                })
+                .catch(err => {
+                    const dummy = `<h1>${book.title}</h1><p>দুঃখিত, ফাইলটি লোড করা যায়নি। ডামি টেক্সট।</p>` + 
+                                  `<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>`.repeat(10);
+                    
+                    $('#home-view').hide();
+                    $('#reader-view').css('display', 'flex');
+                    
+                    setTimeout(() => {
+                        setupFlipbook(book.title, dummy);
+                        $('#loader').hide();
+                    }, 100);
+                });
+        }
+
+        function setupFlipbook(title, htmlContent) {
+            const flipbook = $('#flipbook');
+            
+            // সমাধান ২: .turn('is') বাদ দিয়ে ক্লাসিক পদ্ধতিতে চেক করা
+            // যদি আগে কোনো turn ইনস্ট্যান্স থাকে, তবে সেটা ডিলিট করা
+            try {
+                // v3 তে data().turn চেক করা নিরাপদ অথবা সরাসরি destroy কল করা (try-catch সহ)
+                if (flipbook.data().turn) {
+                    flipbook.turn('destroy');
+                    $(window).unbind('keydown');
+                }
+            } catch(e) {
+                console.log("Resetting flipbook...");
+            }
+            
+            // HTML ক্লিয়ার এবং নতুন করে সেট
+            flipbook.html('').attr('style', ''); // style রিসেট করা জরুরি
+
+            // ১. কভার পেজ
+            flipbook.append(`
+                <div class="page hard">
+                    <h1 style="font-size: 2rem; margin:0;">${title}</h1>
+                    <p>Tap to read</p>
+                </div>
+                <div class="page hard"></div>
             `);
 
-            // ২. কনটেন্ট পেজ বানানো (প্যারাগ্রাফ অনুযায়ী ভাগ করা)
+            // ২. কনটেন্ট প্রসেসিং
             const parser = new DOMParser();
             const doc = parser.parseFromString(htmlContent, 'text/html');
             const elements = Array.from(doc.body.children);
 
             let pageContent = '';
-            let charLimit = $(window).width() < 768 ? 500 : 800; // মোবাইলে কম লেখা, পিসিতে বেশি
+            let charLimit = $(window).width() < 768 ? 400 : 800; 
             let currentCount = 0;
 
             elements.forEach(el => {
                 const textLen = el.textContent.length;
-                // ইমেজ থাকলে আলাদা লজিক বা বড় টেক্সট হলে নতুন পেজ
                 if (currentCount + textLen > charLimit || el.tagName === 'IMG') {
                     if (pageContent) addPage(flipbook, pageContent);
                     pageContent = '';
@@ -246,7 +270,7 @@
             });
             if(pageContent) addPage(flipbook, pageContent);
 
-            // ৩. শেষ পেজ (ব্যাক কভার)
+            // ৩. শেষ পেজ
             flipbook.append('<div class="page hard"></div><div class="page hard">THE END</div>');
 
             // ৪. Turn.js চালু করা
@@ -259,43 +283,48 @@
 
         function initTurnJs() {
             const isMobile = $(window).width() < 768;
-            
-            $('#flipbook').turn({
+            const flipbook = $('#flipbook');
+
+            flipbook.turn({
                 width: isMobile ? $(window).width() * 0.9 : 800,
-                height: isMobile ? $(window).height() * 0.75 : 500,
+                height: isMobile ? $(window).height() * 0.6 : 500,
                 autoCenter: true,
-                display: isMobile ? 'single' : 'double', // মোবাইলে ১ পাতা, পিসিতে ২ পাতা
+                display: isMobile ? 'single' : 'double',
                 duration: 1000,
                 gradients: true,
                 elevation: 50
             });
 
-            // কিবোর্ড সাপোর্ট
             $(window).bind('keydown', function(e) {
-                if (e.keyCode == 37) $('#flipbook').turn('previous');
-                if (e.keyCode == 39) $('#flipbook').turn('next');
+                if (e.keyCode == 37) flipbook.turn('previous');
+                if (e.keyCode == 39) flipbook.turn('next');
             });
         }
 
-        // --- হোমে ফিরে যাওয়া ---
         function goHome() {
             $('#reader-view').hide();
             $('#home-view').show();
             
-            // মেমোরি ক্লিন করার জন্য বই ডিলিট করা
-            if ($('#flipbook').turn('is')) {
-                $('#flipbook').turn('destroy');
-            }
-            $('#flipbook').html('');
+            // ক্লিনআপ
+            const flipbook = $('#flipbook');
+            try {
+                if (flipbook.data().turn) {
+                    flipbook.turn('destroy');
+                }
+            } catch(e) {}
+            flipbook.html('');
         }
 
-        // রিসাইজ হ্যান্ডেলিং
         $(window).resize(function() {
-            if ($('#reader-view').is(':visible') && $('#flipbook').turn('is')) {
-                $('#flipbook').turn('resize');
+            // রিসাইজ লজিক: শুধু যদি ভিউ ওপেন থাকে
+            if ($('#reader-view').is(':visible')) {
+                const flipbook = $('#flipbook');
+                // v3 তে data().turn চেক করা ভালো
+                if (flipbook.data() && flipbook.data().turn) {
+                    flipbook.turn('resize');
+                }
             }
         });
-
-    </script>
+                </script>
 </body>
           </html>

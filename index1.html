@@ -3,81 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GPT Flipbook Library</title>
-    <meta name="theme-color" id="theme-color" content="#4285f4" />
+    <title>Complete Flipbook Library</title>
 
-    <!-- KaTeX CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css">
-    
-    <!-- jQuery & Turn.js (ফ্লিপবুকের জন্য নতুন যুক্ত করা হয়েছে) -->
+    <!-- ১. লাইব্রেরি ইম্পোর্ট (ইন্টারনেট কানেকশন প্রয়োজন) -->
+    <!-- jQuery (Turn.js এর জন্য জরুরি) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Turn.js (ফ্লিপ এফেক্ট) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/3/turn.min.js"></script>
-
-    <!-- React Libraries -->
+    
+    <!-- React & Babel -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Markdown Parser -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-    <!-- KaTeX JS -->
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/contrib/auto-render.min.js"></script>
-
-    <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- ফন্ট এবং আইকন -->
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
+    <!-- ২. CSS স্টাইল -->
     <style>
-        /* --- গ্লোবাল স্টাইল --- */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        :root {
-            --bg-body: #333; /* রিডার মোডে ডার্ক ব্যাকগ্রাউন্ড ভালো লাগে */
-            --bg-paper: #fdf6e3;     
-            --text-main: #1a1a1a;    
-            --border-color: #000;    
-            --accent: #d4af37;
-            --highlight: #ffeeba;       
-            --shadow: 0 5px 20px rgba(0,0,0,0.5);
+        body { 
+            margin: 0; padding: 0; width: 100%; height: 100vh; 
+            font-family: 'Crimson Text', serif; overflow: hidden; 
+            background-color: #333; /* ডিফল্ট ডার্ক ব্যাকগ্রাউন্ড */
+            transition: background 0.3s;
         }
 
-        /* থিমস */
-        body.theme-white { --bg-paper: #ffffff; --text-main: #2c2c2c; }
-        body.theme-sepia { --bg-paper: #fdf6e3; --text-main: #5b4636; }
-        body.theme-black { --bg-paper: #1e1e1e; --text-main: #d1d1d1; }
+        /* থিম কালারস */
+        body.theme-white { background-color: #f0f0f0; --paper: #fff; --text: #333; }
+        body.theme-sepia { background-color: #5b4636; --paper: #fdf6e3; --text: #5b4636; }
+        body.theme-black { background-color: #222; --paper: #1a1a1a; --text: #ccc; }
 
-        html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: 'Crimson Text', serif; background-color: var(--bg-body); }
+        /* অ্যাপ কন্টেইনার */
+        .app-container { width: 100%; height: 100%; display: flex; flex-direction: column; }
 
-        .app-container { display: flex; flex-direction: column; width: 100%; height: 100vh; }
-        
-        /* --- ফ্লিপবুক এরিয়া --- */
+        /* হোম স্ক্রিন */
+        .home-view { 
+            width: 100%; height: 100%; overflow-y: auto; 
+            background: #eaddcf; padding: 40px 20px; text-align: center; 
+        }
+        .book-grid { 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 30px; max-width: 1000px; margin: 0 auto; 
+        }
+        .book-card {
+            background: #4a192c; color: #d4af37; border-radius: 5px; cursor: pointer;
+            height: 280px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; padding: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3); border-left: 10px solid #2c0e1a;
+            transition: transform 0.3s;
+        }
+        .book-card:hover { transform: translateY(-10px); }
+
+        /* রিডার এরিয়া (যেখানে ফ্লিপবুক থাকবে) */
         .reader-area { 
-            flex: 1; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            position: relative;
-            overflow: hidden;
-            perspective: 2000px;
+            flex: 1; display: flex; justify-content: center; align-items: center; 
+            position: relative; overflow: hidden;
         }
 
+        /* ফ্লিপবুক পেজ ডিজাইন */
         #flipbook { transition: margin 0.3s; }
-
+        
         .page {
-            background-color: var(--bg-paper); color: var(--text-main);
+            background-color: var(--paper, #fff); color: var(--text, #333);
             box-shadow: inset -5px 0 20px rgba(0,0,0,0.05);
             font-size: 18px; line-height: 1.6; text-align: justify;
-            overflow: hidden;
-            border-right: 1px solid rgba(0,0,0,0.1);
-        }
-
-        .page-content { 
-            padding: 40px; 
-            height: 100%; 
-            display: flex; flex-direction: column; 
-            /* ইউজারের সিলেক্ট করা ফন্ট সাইজ এখানে অ্যাপ্লাই হবে */
+            overflow: hidden; border: 1px solid rgba(0,0,0,0.1);
         }
         
+        .page-content { 
+            padding: 40px; height: 100%; display: flex; flex-direction: column; 
+        }
+        
+        /* কভার পেজ */
         .page.hard {
             background: #4a192c !important; color: #d4af37 !important;
             border: 5px double #d4af37;
@@ -85,60 +88,64 @@
             justify-content: center; align-items: center; text-align: center;
         }
 
-        /* --- কন্ট্রোলস --- */
+        /* ইমেজ স্টাইল */
+        .page-content img { max-width: 100%; max-height: 80%; display: block; margin: 10px auto; }
+        
+        /* কন্ট্রোল বার */
         .controls {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             background: #fff; padding: 10px 20px; border-radius: 50px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: flex; gap: 12px; z-index: 1000;
-            align-items: center; color: #333;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: flex; gap: 15px; z-index: 1000;
+            align-items: center;
         }
-        .btn { background: none; border: none; cursor: pointer; color: #333; display: flex; align-items: center; justify-content: center; padding: 8px; border-radius: 50%; transition: 0.2s; }
+        .btn { 
+            background: none; border: none; cursor: pointer; color: #333; 
+            display: flex; align-items: center; justify-content: center; 
+            padding: 8px; border-radius: 50%; transition: 0.2s; 
+        }
         .btn:hover { background: rgba(0,0,0,0.1); }
+        .divider { width: 1px; height: 20px; background: #ccc; }
 
-        /* --- হোম স্ক্রিন গ্রিড --- */
-        .home-view { width: 100%; height: 100%; overflow-y: auto; background: #eaddcf; padding: 40px 20px; text-align: center; }
-        .book-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; max-width: 1000px; margin: 0 auto; }
-        .book-card {
-            background: #4a192c; color: #d4af37; border-radius: 5px; cursor: pointer;
-            height: 260px; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; padding: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3); border-left: 10px solid #2c0e1a;
-            transition: transform 0.3s;
-        }
-        .book-card:hover { transform: translateY(-10px); }
-
-        /* --- মোবাইল রেসপন্সিভ --- */
+        /* মোবাইল রেসপন্সিভ */
         @media (max-width: 768px) {
-            .page-content { padding: 20px; }
-            .book-card { height: 200px; }
+            .page-content { padding: 20px; font-size: 16px; }
+            .controls { padding: 8px 15px; width: 90%; justify-content: space-between; gap: 5px; }
         }
 
-        .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); color: white; display: flex; justify-content: center; align-items: center; z-index: 3000; }
-        
-        /* KaTeX Fix */
-        .katex { font-size: 1em; }
-        img { max-width: 100%; height: auto; display: block; margin: 10px auto; }
+        /* লোডার */
+        .loader { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.9); color: white; display: flex; 
+            flex-direction: column; justify-content: center; align-items: center; 
+            z-index: 3000; font-family: sans-serif;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3; border-top: 4px solid #d4af37;
+            border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <div id="root"></div>
 
+    <!-- ৩. জাভাস্ক্রিপ্ট (React কোড) -->
     <script type="text/babel">
-        const { useState, useEffect, useRef, useLayoutEffect } = React;
+        const { useState, useEffect, useRef } = React;
 
-        // --- FLIPBOOK COMPONENT ---
-        const FlipbookReader = ({ content, title, fontSize, onPrev, onNext, theme }) => {
+        // --- কম্পোনেন্ট: ফ্লিপবুক রিডার ---
+        const FlipbookReader = ({ content, title, fontSize, theme }) => {
             const flipbookRef = useRef(null);
-            const containerRef = useRef(null);
             const [pages, setPages] = useState([]);
             const [ready, setReady] = useState(false);
 
-            // ১. পেজ ক্যালকুলেশন এবং স্প্লিটিং (Pagination Logic)
+            // ১. HTML কন্টেন্টকে পেজে ভাগ করার লজিক
             useEffect(() => {
                 if (!content) return;
 
                 const parser = new DOMParser();
+                // Markdown থেকে HTML এ রূপান্তর
                 const htmlString = marked.parse(content);
                 const doc = parser.parseFromString(htmlString, 'text/html');
                 const elements = Array.from(doc.body.children);
@@ -146,34 +153,46 @@
                 let newPages = [];
                 let currentPage = "";
                 
-                // স্ক্রিন সাইজ অনুযায়ী পেজের কন্টেন্ট লিমিট
+                // স্ক্রিন অনুযায়ী ক্যারেক্টার লিমিট (পেজ কত বড় হবে)
                 const isMobile = window.innerWidth < 768;
-                const charLimit = isMobile ? 500 : 900; 
+                const charLimit = isMobile ? 550 : 950; 
                 let currentCount = 0;
 
-                // এলিমেন্ট ধরে ধরে পেজে ভাগ করা
                 elements.forEach(el => {
                     const elHTML = el.outerHTML;
                     const textLen = el.textContent.length;
                     
-                    // ইমেজ থাকলে অথবা টেক্সট লিমিট পার হলে নতুন পেজ
-                    if ((currentCount + textLen > charLimit) || el.tagName === 'IMG') {
+                    // h1, h2 পেলে নতুন পাতা শুরু হবে (চ্যাপ্টার ব্রেক)
+                    const isHeader = el.tagName === 'H1' || el.tagName === 'H2';
+                    // ইমেজ পেলে বা লিমিট ক্রস করলে নতুন পাতা
+                    const isImage = el.tagName === 'IMG';
+
+                    if ((currentPage && isHeader) || (currentCount + textLen > charLimit) || isImage) {
                         if (currentPage) newPages.push(currentPage);
                         currentPage = "";
                         currentCount = 0;
                     }
+                    
                     currentPage += elHTML;
                     currentCount += textLen;
+                    
+                    // ইমেজ একা এক পেজে থাকবে
+                    if(isImage && currentPage) {
+                        newPages.push(currentPage);
+                        currentPage = "";
+                        currentCount = 0;
+                    }
                 });
+                
                 if (currentPage) newPages.push(currentPage);
                 
-                // কভার এবং শেষ পেজ যোগ করা
+                // পেজ অ্যারে তৈরি
                 setPages([
                     { type: 'cover', content: title },
                     ...newPages.map(c => ({ type: 'content', content: c })),
-                    { type: 'end', content: 'THE END' }
+                    { type: 'end', content: 'সমাপ্ত' }
                 ]);
-                setReady(false); // Turn.js রিলোড করার জন্য
+                setReady(false); // নতুন কন্টেন্ট আসলে রি-রেন্ডার হবে
             }, [content, title]);
 
             // ২. Turn.js ইনিশিয়ালাইজেশন
@@ -182,67 +201,62 @@
 
                 const $el = $(flipbookRef.current);
                 
-                // আগের ইন্সট্যান্স থাকলে ধ্বংস করা
+                // আগের বই ডিলিট করা
                 try { if ($el.data().turn) $el.turn('destroy'); } catch(e){}
 
-                // সাইজ ক্যালকুলেশন
+                // উইন্ডো সাইজ অনুযায়ী বইয়ের সাইজ
                 const w = window.innerWidth;
                 const h = window.innerHeight;
                 const isMobile = w < 768;
-                let bookH = h * 0.85;
-                let bookW = isMobile ? (w * 0.95) : (bookH * 1.4);
+                
+                let bookH = h * 0.85; // স্ক্রিনের ৮৫% উচ্চতা
+                let bookW = isMobile ? (w * 0.94) : (bookH * 1.4);
                 if (!isMobile && bookW > w * 0.9) bookW = w * 0.9;
 
-                // Turn.js সেটআপ (একটু ডিলে দিয়ে DOM রেন্ডার হওয়ার পর)
+                // DOM রেন্ডার হওয়ার পর Turn.js চালু
                 setTimeout(() => {
                     $el.turn({
                         width: bookW,
                         height: bookH,
                         autoCenter: true,
-                        display: isMobile ? 'single' : 'double',
+                        display: isMobile ? 'single' : 'double', // মোবাইলে ১ পাতা, পিসিতে ২ পাতা
                         duration: 1000,
                         gradients: true,
-                        elevation: 50
+                        elevation: 50,
+                        acceleration: true
                     });
 
-                    // কিবোর্ড ইভেন্ট
+                    // কিবোর্ড সাপোর্ট
                     $(window).unbind('keydown').bind('keydown', function(e) {
                         if (e.keyCode == 37) $el.turn('previous');
                         if (e.keyCode == 39) $el.turn('next');
                     });
-                    
-                    // MathJax/KaTeX রেন্ডার
-                    if(window.renderMathInElement) {
-                        window.renderMathInElement(flipbookRef.current, {
-                            delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]
-                        });
-                    }
 
                     setReady(true);
                 }, 100);
 
-                // ক্লিনআপ
-                return () => {
-                    try { if ($el.data().turn) $el.turn('destroy'); } catch(e){}
-                };
-            }, [pages]); // পেজ চেঞ্জ হলে আবার রান হবে
+                return () => { try { if ($el.data().turn) $el.turn('destroy'); } catch(e){} };
+            }, [pages]);
 
-            // ফন্ট সাইজ আপডেটের জন্য রি-রেন্ডার এড়ানো, সরাসরি DOM স্টাইল চেঞ্জ
+            // ৩. ফন্ট সাইজ আপডেট
             useEffect(() => {
                 if(flipbookRef.current) {
-                    const contentDivs = flipbookRef.current.querySelectorAll('.page-content');
-                    contentDivs.forEach(div => div.style.fontSize = `${fontSize}px`);
+                    const divs = flipbookRef.current.querySelectorAll('.page-content');
+                    divs.forEach(div => div.style.fontSize = `${fontSize}px`);
                 }
             }, [fontSize]);
 
+            // রেন্ডার HTML
             return (
                 <div id="flipbook" ref={flipbookRef} style={{opacity: ready ? 1 : 0}}>
                     {pages.map((page, idx) => {
                         if (page.type === 'cover') {
                             return (
                                 <div key={idx} className="page hard">
-                                    <h1 style={{fontSize:'2rem'}}>{page.content}</h1>
-                                    <p>Tap to open</p>
+                                    <div style={{border:'3px double #d4af37', width:'90%', height:'90%', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center'}}>
+                                        <h1 style={{fontSize:'2.5rem', margin:0}}>{page.content}</h1>
+                                        <p style={{marginTop:'20px'}}>সম্পূর্ণ বই</p>
+                                    </div>
                                 </div>
                             );
                         } else if (page.type === 'end') {
@@ -251,6 +265,7 @@
                             return (
                                 <div key={idx} className="page">
                                     <div className="page-content" style={{fontSize: `${fontSize}px`}} dangerouslySetInnerHTML={{__html: page.content}}></div>
+                                    <div style={{position:'absolute', bottom:'10px', right:'20px', fontSize:'12px', opacity:0.5}}>{idx}</div>
                                 </div>
                             );
                         }
@@ -259,127 +274,129 @@
             );
         };
 
-        // --- MAIN APP COMPONENT ---
+        // --- মূল অ্যাপ কম্পোনেন্ট ---
         function App() {
             const [books, setBooks] = useState([]);
             const [activeBook, setActiveBook] = useState(null);
-            const [activeChapter, setActiveChapter] = useState(null);
-            const [mdContent, setMdContent] = useState('');
-            const [viewMode, setViewMode] = useState('home'); // home, read
+            const [fullBookContent, setFullBookContent] = useState('');
+            const [viewMode, setViewMode] = useState('home'); 
             const [theme, setTheme] = useState('white'); 
             const [fontSize, setFontSize] = useState(18);
             const [loading, setLoading] = useState(false);
 
+            // ১. ডাটাবেজ লোড
             useEffect(() => {
                 fetch('books/db.json')
                     .then(res => res.json())
                     .then(data => setBooks(data))
                     .catch(() => {
-                        // ফলব্যাক ডামি ডাটা
+                        console.log("db.json not found, loading dummy data");
+                        // ডামি ডাটা (যদি json ফাইল না থাকে)
                         setBooks([
-                            { id: "1", title: "Demo Book", chapters: [{id:"c1", file: "sample.md", title: "Chapter 1"}] }
+                            { 
+                                id: "1", title: "Test Book (All Chapters)", 
+                                folder: "books/demo",
+                                chapters: [
+                                    {file: "0.md", title: "ভূমিকা"},
+                                    {file: "1.md", title: "প্রথম অধ্যায়"},
+                                    {file: "2.md", title: "দ্বিতীয় অধ্যায়"}
+                                ] 
+                            },
+                            { id: "2", title: "Simple Story", chapters: [{file: "story.md", title: "The Story"}] }
                         ]);
                     });
             }, []);
 
-            // থিম হ্যান্ডলিং
-            useEffect(() => {
-                document.body.className = `theme-${theme}`;
-            }, [theme]);
+            // থিম পরিবর্তন হলে বডি ক্লাস আপডেট
+            useEffect(() => { document.body.className = `theme-${theme}`; }, [theme]);
 
-            const loadChapter = (book, chapter) => {
+            // ২. সম্পূর্ণ বই লোড করার ফাংশন (সব চ্যাপ্টার একসাথে)
+            const loadFullBook = async (book) => {
                 setLoading(true);
-                // বাস্তবে fetch ব্যবহার করবেন, এখানে ডামি হ্যান্ডলিং
-                const path = book.folder ? `${book.folder}/${chapter.file}` : chapter.file;
+                setActiveBook(book);
                 
-                fetch(path).then(res => {
-                    if(!res.ok) throw new Error("File missing");
-                    return res.text();
-                })
-                .then(text => {
-                    setMdContent(text);
-                    setActiveBook(book);
-                    setActiveChapter(chapter);
+                try {
+                    // সব চ্যাপ্টারের টেক্সট ফেচ করা
+                    const promises = book.chapters.map(chapter => {
+                        const path = book.folder ? `${book.folder}/${chapter.file}` : chapter.file;
+                        return fetch(path)
+                            .then(res => {
+                                if (!res.ok) throw new Error("File not found");
+                                return res.text();
+                            })
+                            // ফাইলের শুরুতে টাইটেল যোগ করা
+                            .then(text => `# ${chapter.title}\n\n${text}`)
+                            .catch(err => `# ${chapter.title}\n\n(ফাইল পাওয়া যায়নি: ${chapter.file})`);
+                    });
+
+                    // সব লোড হওয়া পর্যন্ত অপেক্ষা
+                    const texts = await Promise.all(promises);
+                    
+                    // সব টেক্সট জোড়া লাগানো
+                    const combined = texts.join('\n\n<hr/>\n\n'); 
+                    
+                    setFullBookContent(combined);
                     setViewMode('read');
-                    setLoading(false);
-                })
-                .catch(err => {
-                    // ডামি টেক্সট জেনারেট করা যাতে ডেমো দেখা যায়
-                    let dummy = `# ${chapter.title}\n\n`;
-                    for(let i=0; i<20; i++) dummy += `অনুচ্ছেদ ${i+1}: এটি একটি ডামি টেক্সট। Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\n`;
-                    setMdContent(dummy);
-                    setActiveBook(book);
-                    setActiveChapter(chapter);
-                    setViewMode('read');
-                    setLoading(false);
-                });
+                } catch (error) {
+                    console.error("Error loading book:", error);
+                    alert("বই লোড করতে সমস্যা হয়েছে।");
+                }
+                setLoading(false);
             };
 
             const goHome = () => {
                 setViewMode('home');
-                setMdContent('');
+                setFullBookContent('');
+                // মেমোরি ক্লিনআপ
+                if ($('#flipbook').turn('is')) $('#flipbook').turn('destroy');
             };
 
             const cycleTheme = () => setTheme(t => t==='white'?'sepia':t==='sepia'?'black':'white');
-            
-            // নেভিগেশন (Next/Prev Chapter)
-            const nextChapter = () => {
-                if(!activeBook || !activeChapter) return;
-                const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
-                if(idx < activeBook.chapters.length - 1) loadChapter(activeBook, activeBook.chapters[idx+1]);
-            };
-
-            const prevChapter = () => {
-                if(!activeBook || !activeChapter) return;
-                const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
-                if(idx > 0) loadChapter(activeBook, activeBook.chapters[idx-1]);
-            };
 
             return (
                 <div className="app-container">
-                    {loading && <div className="loader">বই লোড হচ্ছে...</div>}
+                    {loading && <div className="loader"><div className="spinner"></div>বই লোড হচ্ছে...</div>}
 
-                    {/* ১. হোম ভিউ */}
+                    {/* হোম ভিউ */}
                     {viewMode === 'home' && (
                         <div className="home-view">
                             <div style={{fontSize:'2.5rem', color:'#4a192c', fontWeight:'bold', marginBottom:'30px'}}>MY LIBRARY</div>
                             <div className="book-grid">
                                 {books.map(b => (
-                                    <div key={b.id} className="book-card" onClick={() => loadChapter(b, b.chapters[0])}>
-                                        <div style={{fontSize:'1.5rem', fontWeight:'bold', marginBottom:'10px'}}>{b.title}</div>
+                                    <div key={b.id} className="book-card" onClick={() => loadFullBook(b)}>
+                                        <div style={{fontSize:'1.5rem', fontWeight:'bold', marginBottom:'10px', textAlign:'center'}}>{b.title}</div>
                                         <div style={{opacity:0.8}}>{b.chapters.length} Chapters</div>
                                         <div style={{marginTop:'auto', fontSize:'2rem'}}>📖</div>
+                                        <div style={{fontSize:'12px', marginTop:'5px'}}>Tap to Read</div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    {/* ২. রিডার ভিউ (ফ্লিপবুক) */}
+                    {/* রিডার ভিউ */}
                     {viewMode === 'read' && (
                         <div className="reader-area">
                             <FlipbookReader 
-                                content={mdContent} 
-                                title={activeChapter ? activeChapter.title : ''}
+                                content={fullBookContent} 
+                                title={activeBook.title}
                                 fontSize={fontSize}
                                 theme={theme}
                             />
                             
-                            {/* কন্ট্রোলস */}
+                            {/* কন্ট্রোল বাটনস */}
                             <div className="controls">
-                                <button className="btn" onClick={goHome} title="Home"><span className="material-icons">home</span></button>
-                                <div style={{width:'1px', height:'20px', background:'#ccc'}}></div>
+                                <button className="btn" onClick={goHome} title="Library"><span className="material-icons">home</span></button>
+                                <div className="divider"></div>
                                 
-                                <button className="btn" onClick={prevChapter} title="Previous Chapter"><span className="material-icons">skip_previous</span></button>
                                 <button className="btn" onClick={() => $('#flipbook').turn('previous')}><span className="material-icons">west</span></button>
                                 <button className="btn" onClick={() => $('#flipbook').turn('next')}><span className="material-icons">east</span></button>
-                                <button className="btn" onClick={nextChapter} title="Next Chapter"><span className="material-icons">skip_next</span></button>
                                 
-                                <div style={{width:'1px', height:'20px', background:'#ccc'}}></div>
+                                <div className="divider"></div>
                                 <button className="btn" onClick={() => setFontSize(s => Math.max(14, s-2))}>A-</button>
                                 <button className="btn" onClick={() => setFontSize(s => Math.min(32, s+2))}>A+</button>
-                                <div style={{width:'1px', height:'20px', background:'#ccc'}}></div>
-                                <button className="btn" onClick={cycleTheme} title="Theme"><span className="material-icons">brightness_6</span></button>
+                                <div className="divider"></div>
+                                <button className="btn" onClick={cycleTheme}><span className="material-icons">brightness_6</span></button>
                             </div>
                         </div>
                     )}

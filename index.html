@@ -395,59 +395,101 @@
                 </div>
             );
 
-            const HomeView = () => (
-                <div className="reader-area">
-                    <div className="book-sheet" style={{textAlign:'center', display:'flex', flexDirection:'column', justifyContent:'center', minHeight:'60vh', paddingBottom:'50px'}}>
-                        <h1 style={{fontSize:'clamp(2rem, 5vw, 3rem)', color:'var(--accent)', marginBottom:'10px'}}>GPT Library</h1>
-                        <p style={{fontStyle:'italic', marginBottom:'40px', opacity:0.7}}>Select A Book To Read</p>
-                        <div className="book-grid">
-                            {books.length > 0 ? books.map(b => (
-                                <div key={b.id} className="book-card" onClick={() => navigateTo(b, null)}>
-                                    <h3 style={{marginTop:0, fontSize:'1.2rem'}}>{b.title}</h3>
-                                    <p style={{fontSize:'14px', opacity:0.7}}>{b.chapters.length} Chapters</p>
-                                </div>
-                            )) : <p>loading...</p>}
-                        </div>
-                    </div>
-                </div>
-            );
+           // 1. Create a reusable component for the Adsterra Ad
+const AdsterraAd = () => {
+    const adRef = React.useRef(null);
 
-            const IndexView = () => (
-                <div className="reader-area">
-                    <div className="book-sheet">
-                        <div style={{textAlign:'center', marginBottom:'30px'}}>
-                            <h1 style={{margin:0, fontSize:'clamp(1.8rem, 4vw, 2.5rem)', lineHeight:'1.2'}}>{activeBook.title}</h1>
-                            <hr style={{borderTop:'2px solid var(--border-color)', width:'50px', margin:'20px auto', opacity:0.5}}/>
-                            <div style={{display:'flex', gap:'10px', justifyContent:'center'}}>
-                                <button onClick={() => {setSelectedChapters([]); openModal('print');}} className="no-print" style={{background:'transparent', border:'1px solid var(--text-main)', padding:'6px 15px', borderRadius:'20px', cursor:'pointer', color:'var(--text-main)', fontSize:'13px', display:'inline-flex', alignItems:'center', gap:'5px'}}>
-                                    <span className="material-icons" style={{fontSize:'16px'}}>picture_as_pdf</span> PDF
-                                </button>
-                            </div>
-                        </div>
-                        <div>
-                            {activeBook.chapters.map(chap => (
-                                <div key={chap.id} onClick={() => loadChapter(activeBook, chap)}
-                                     style={{padding:'18px 10px', borderBottom:'1px dashed rgba(0,0,0,0.1)', cursor:'pointer', display:'flex', justifyContent:'space-between', fontSize:'17px', alignItems:'center'}}>
-                                    <span style={{fontWeight:'600'}}>{chap.title}</span><span className="material-icons" style={{fontSize:'18px', opacity:0.5}}>chevron_right</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            );
+    React.useEffect(() => {
+        // Inject the script only if it hasn't been added to this container yet
+        if (adRef.current && adRef.current.children.length === 0) {
+            const script = document.createElement("script");
+            script.type = "text/javascript";
+            script.async = true;
+            script.dataset.cfasync = "false";
+            script.src = "https://matcheshonoraryunderwater.com/9339b2c09966f86f2eae179f6cc60b81/invoke.js";
+            
+            adRef.current.appendChild(script);
+        }
+    }, []);
 
-            const ReadView = () => (
-                <div className="reader-area" id="main-reader">
-                    <div className="book-sheet">
-                        <div style={{textAlign:'center', fontSize:'12px', textTransform:'uppercase', letterSpacing:'2px', marginBottom:'30px', opacity:0.6, borderBottom:'1px solid rgba(0,0,0,0.1)', paddingBottom:'10px'}}>{activeBook.title}</div>
-                        <MarkdownViewer content={mdContent} fontSize={fontSize} />
-                        <div className="chapter-nav no-print">
-                            <button className="nav-btn" onClick={() => navigateChapter('prev')} disabled={activeBook.chapters.findIndex(c => c.id === activeChapter.id) <= 0}><span className="material-icons">west</span> আগের</button>
-                            <button className="nav-btn" onClick={() => navigateChapter('next')} disabled={activeBook.chapters.findIndex(c => c.id === activeChapter.id) >= activeBook.chapters.length - 1} style={{background: 'var(--text-main)', color: 'var(--bg-paper)'}}>পরের <span className="material-icons">east</span></button>
-                        </div>
+    return (
+        <div 
+            id="container-9339b2c09966f86f2eae179f6cc60b81" 
+            ref={adRef}
+            className="no-print"
+            style={{ margin: '20px auto', display: 'flex', justifyContent: 'center', minHeight: '50px' }}
+        ></div>
+    );
+};
+
+// 2. Add the Ad component to your existing Views
+
+const HomeView = () => (
+    <div className="reader-area">
+        <div className="book-sheet" style={{textAlign:'center', display:'flex', flexDirection:'column', justifyContent:'center', minHeight:'60vh', paddingBottom:'50px'}}>
+            <h1 style={{fontSize:'clamp(2rem, 5vw, 3rem)', color:'var(--accent)', marginBottom:'10px'}}>GPT Library</h1>
+            <p style={{fontStyle:'italic', marginBottom:'40px', opacity:0.7}}>Select A Book To Read</p>
+            
+            {/* Adsterra Ad placed above the book grid */}
+            <AdsterraAd />
+
+            <div className="book-grid">
+                {books.length > 0 ? books.map(b => (
+                    <div key={b.id} className="book-card" onClick={() => navigateTo(b, null)}>
+                        <h3 style={{marginTop:0, fontSize:'1.2rem'}}>{b.title}</h3>
+                        <p style={{fontSize:'14px', opacity:0.7}}>{b.chapters.length} Chapters</p>
                     </div>
+                )) : <p>loading...</p>}
+            </div>
+        </div>
+    </div>
+);
+
+const IndexView = () => (
+    <div className="reader-area">
+        <div className="book-sheet">
+            <div style={{textAlign:'center', marginBottom:'30px'}}>
+                <h1 style={{margin:0, fontSize:'clamp(1.8rem, 4vw, 2.5rem)', lineHeight:'1.2'}}>{activeBook.title}</h1>
+                <hr style={{borderTop:'2px solid var(--border-color)', width:'50px', margin:'20px auto', opacity:0.5}}/>
+                <div style={{display:'flex', gap:'10px', justifyContent:'center'}}>
+                    <button onClick={() => {setSelectedChapters([]); openModal('print');}} className="no-print" style={{background:'transparent', border:'1px solid var(--text-main)', padding:'6px 15px', borderRadius:'20px', cursor:'pointer', color:'var(--text-main)', fontSize:'13px', display:'inline-flex', alignItems:'center', gap:'5px'}}>
+                        <span className="material-icons" style={{fontSize:'16px'}}>picture_as_pdf</span> PDF
+                    </button>
                 </div>
-            );
+            </div>
+
+            {/* Adsterra Ad placed between title and chapter list */}
+            <AdsterraAd />
+
+            <div>
+                {activeBook.chapters.map(chap => (
+                    <div key={chap.id} onClick={() => loadChapter(activeBook, chap)}
+                         style={{padding:'18px 10px', borderBottom:'1px dashed rgba(0,0,0,0.1)', cursor:'pointer', display:'flex', justifyContent:'space-between', fontSize:'17px', alignItems:'center'}}>
+                        <span style={{fontWeight:'600'}}>{chap.title}</span><span className="material-icons" style={{fontSize:'18px', opacity:0.5}}>chevron_right</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </div>
+);
+
+const ReadView = () => (
+    <div className="reader-area" id="main-reader">
+        <div className="book-sheet">
+            <div style={{textAlign:'center', fontSize:'12px', textTransform:'uppercase', letterSpacing:'2px', marginBottom:'30px', opacity:0.6, borderBottom:'1px solid rgba(0,0,0,0.1)', paddingBottom:'10px'}}>{activeBook.title}</div>
+            
+            {/* Adsterra Ad placed at the top of the reading page */}
+            <AdsterraAd />
+
+            <MarkdownViewer content={mdContent} fontSize={fontSize} />
+            
+            <div className="chapter-nav no-print">
+                <button className="nav-btn" onClick={() => navigateChapter('prev')} disabled={activeBook.chapters.findIndex(c => c.id === activeChapter.id) <= 0}><span className="material-icons">west</span> আগের</button>
+                <button className="nav-btn" onClick={() => navigateChapter('next')} disabled={activeBook.chapters.findIndex(c => c.id === activeChapter.id) >= activeBook.chapters.length - 1} style={{background: 'var(--text-main)', color: 'var(--bg-paper)'}}>পরের <span className="material-icons">east</span></button>
+            </div>
+        </div>
+    </div>
+);
 
             const PrintModal = () => (
                 <div className="modal-overlay">

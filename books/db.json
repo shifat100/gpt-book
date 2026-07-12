@@ -12,6 +12,18 @@
     ]
   },
   {
+    "id": "pof",
+    "title": "Principles Of Finance ",
+    "folder": "books/principal_of_finance",
+    "chapters": [
+      { "id": "c1", "title": "Introduction", "file": "1.md" },
+      { "id": "c2", "title": "Risk and return", "file": "2.md" },
+      { "id": "c3", "title": "Capital budgeting", "file": "3.md" },
+      { "id": "c4", "title": "Cost of capital", "file": "4.md" },
+      { "id": "c5", "title": "Short term financing", "file": "5.md" }
+    ]
+  },
+  {
   "id": "scm",
   "title": "Supply Chain Management",
   "folder": "books/scm",

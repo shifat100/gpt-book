@@ -16,14 +16,14 @@
     "title": "Principles Of Marketing",
     "folder": "books/principles_of_marketing",
     "chapters": [
-      { "id": "c1", "title": "Introduction", "file": "1.md" },
-      { "id": "c2", "title": "Risk and return", "file": "2.md" },
-      { "id": "c3", "title": "Capital budgeting", "file": "3.md" },
-      { "id": "c4", "title": "Cost of capital", "file": "4.md" },
-      { "id": "c5", "title": "Short term financing", "file": "5.md" },
-      { "id": "c6", "title": "Mid term financing ", "file": "6.md" },
-      { "id": "c7", "title": "Valuation of long term securities", "file": "7.md" },
-      { "id": "c8", "title": "Capital structure and theories", "file": "8.md" }
+      { "id": "c1", "title": "Introduction to Marketing", "file": "1.md" },
+      { "id": "c2", "title": "The Marketing Environment", "file": "2.md" },
+      { "id": "c3", "title": "Consumer Buying Behavior", "file": "3.md" },
+      { "id": "c4", "title": "Market Segmentation, Targeting, and Positioning (STP)", "file": "4.md" },
+      { "id": "c5", "title": "Product and Service", "file": "5.md" },
+      { "id": "c6", "title": "Price", "file": "6.md" },
+      { "id": "c7", "title": "Place (Distribution)", "file": "7.md" },
+      { "id": "c8", "title": "Promotion", "file": "8.md" }
     ]
   },
   {

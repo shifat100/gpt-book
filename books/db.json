@@ -12,6 +12,20 @@
     ]
   },
   {
+    "id": "esbm",
+    "title": " Entrepreneurship and small business management",
+    "folder": "books/entrepreneurship_and_small_business_management",
+    "chapters": [
+      { "id": "c1", "title": "Introduction to Entrepreneurship", "file": "1.md" },
+      { "id": "c2", "title": "Entrepreneurial environment and business opportunity identification", "file": "2.md" },
+      { "id": "c3", "title": "Introducing small business", "file": "3.md" },
+      { "id": "c4", "title": "Planning of small business", "file": "4.md" },
+      { "id": "c5", "title": "Financing small Enterprise", "file": "5.md" },
+      { "id": "c6", "title": "Marketing for small business", "file": "6.md" },
+      { "id": "c7", "title": " Entrepreneurship and small business development in Bangladesh", "file": "7.md" }
+    ]
+  },
+  {
     "id": "pom",
     "title": "Principles Of Marketing",
     "folder": "books/principles_of_marketing",

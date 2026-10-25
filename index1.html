@@ -6,7 +6,7 @@
     <title>GPT Digital Library & E-Book Reader</title>
     <meta name="theme-color" id="theme-color" content="#4285f4" />
 
-    <!-- KaTeX CSS & JS (Synchronous to guarantee math renders instantly) -->
+    <!-- KaTeX CSS & JS (Synchronous for zero-delay math rendering) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
@@ -25,9 +25,9 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         :root {
-            --bg-body: #ebeee8;      
-            --bg-paper: #fdfcf7;     
-            --text-main: #202020;    
+            --bg-body: #eaede6;      
+            --bg-paper: #fcfbf7;     
+            --text-main: #222222;    
             --border-color: rgba(0,0,0,0.12);    
             --accent: #8b0000;
             --highlight: #ffeeba;       
@@ -38,11 +38,11 @@
 
         /* Themes */
         body.theme-white { 
-            --bg-body: #edf1f7; --bg-paper: #ffffff; --text-main: #242424; 
+            --bg-body: #ecf0f6; --bg-paper: #ffffff; --text-main: #242424; 
             --border-color: rgba(0,0,0,0.1); --accent: #1952cc; --spine-shadow: rgba(0,0,0,0.14); --page-thickness: #e2e5ea;
         }
         body.theme-sepia { 
-            --bg-body: #ece1cc; --bg-paper: #faf3e3; --text-main: #4a3625; 
+            --bg-body: #ebe0cb; --bg-paper: #faf3e3; --text-main: #4a3625; 
             --border-color: rgba(90,65,40,0.16); --accent: #8a4313; --highlight: #fedcba; --spine-shadow: rgba(75,45,15,0.2); --page-thickness: #d9cbb4;
         }
         body.theme-black { 
@@ -69,6 +69,7 @@
         /* --- 3D FLIPBOOK CONTAINER --- */
         .flipbook-stage {
             perspective: 2600px;
+            -webkit-perspective: 2600px;
             width: 100%;
             max-width: 1200px;
             height: calc(100vh - 110px);
@@ -78,7 +79,7 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            touch-action: pan-y;
+            cursor: pointer;
         }
 
         .book-spread {
@@ -90,15 +91,16 @@
             box-shadow: var(--shadow);
             border-radius: 8px;
             transform-style: preserve-3d;
+            -webkit-transform-style: preserve-3d;
             border: 1px solid var(--border-color);
         }
 
-        /* Center Crease & Spine Shadow */
+        /* Spine Crease & Shadow */
         .book-spread::before {
             content: '';
             position: absolute;
             top: 0; bottom: 0; left: 50%;
-            width: 40px;
+            width: 44px;
             transform: translateX(-50%);
             background: linear-gradient(to right, 
                 var(--spine-shadow) 0%, 
@@ -117,7 +119,7 @@
             z-index: 26;
         }
 
-        /* Halves / Pages */
+        /* Book Halves */
         .book-half {
             width: 50%;
             height: 100%;
@@ -127,7 +129,6 @@
             position: relative;
             overflow: hidden;
             background: var(--bg-paper);
-            cursor: pointer;
         }
         .book-half.left {
             border-radius: 8px 0 0 8px;
@@ -175,24 +176,60 @@
         .book-half.left .page-footer { justify-content: flex-start; }
         .book-half.right .page-footer { justify-content: flex-end; }
 
-        /* Interactive Dynamic Flip Leaf */
-        .interactive-leaf {
+        /* --- 3D ANIMATED FLIP LEAF --- */
+        .flip-leaf {
             position: absolute;
             top: 0;
             width: 50%;
             height: 100%;
             transform-style: preserve-3d;
-            z-index: 40;
+            -webkit-transform-style: preserve-3d;
+            z-index: 50;
             pointer-events: none;
-            box-shadow: 0 0 30px rgba(0,0,0,0.25);
         }
-        .interactive-leaf.leaf-right {
+        .flip-leaf.forward {
             right: 0;
             transform-origin: left center;
+            -webkit-transform-origin: left center;
+            animation: flipPageForward 0.52s cubic-bezier(0.645, 0.045, 0.355, 1.000) forwards;
         }
-        .interactive-leaf.leaf-left {
+        .flip-leaf.backward {
             left: 0;
             transform-origin: right center;
+            -webkit-transform-origin: right center;
+            animation: flipPageBackward 0.52s cubic-bezier(0.645, 0.045, 0.355, 1.000) forwards;
+        }
+
+        @keyframes flipPageForward {
+            0% {
+                transform: rotateY(0deg);
+                -webkit-transform: rotateY(0deg);
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+            50% {
+                box-shadow: -25px 0 40px rgba(0,0,0,0.4);
+            }
+            100% {
+                transform: rotateY(-180deg);
+                -webkit-transform: rotateY(-180deg);
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+        }
+
+        @keyframes flipPageBackward {
+            0% {
+                transform: rotateY(0deg);
+                -webkit-transform: rotateY(0deg);
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+            50% {
+                box-shadow: 25px 0 40px rgba(0,0,0,0.4);
+            }
+            100% {
+                transform: rotateY(180deg);
+                -webkit-transform: rotateY(180deg);
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
         }
 
         .leaf-side {
@@ -201,18 +238,21 @@
             height: 100%;
             top: 0; left: 0;
             backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
             background: var(--bg-paper);
             padding: 28px 40px 30px 40px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            box-sizing: border-box;
             box-shadow: inset 0 0 30px rgba(0,0,0,0.06);
         }
         .leaf-side.back {
             transform: rotateY(180deg);
+            -webkit-transform: rotateY(180deg);
         }
 
-        /* Subtle Corner Curl Indicator */
+        /* Subtle Corner Curl */
         .corner-curl {
             position: absolute;
             bottom: 0; right: 0;
@@ -239,10 +279,31 @@
             .book-spread::before, .book-spread::after { display: none; }
             .book-half.left { width: 100%; height: 100%; padding: 22px 18px; border-radius: 4px; box-shadow: none; }
             .book-half.right { display: none; }
-            .interactive-leaf { width: 100% !important; }
+
+            .flip-leaf {
+                width: 100% !important;
+                right: 0 !important;
+                left: 0 !important;
+            }
+            .flip-leaf.forward {
+                animation: mobileSlideForward 0.45s ease-in-out forwards;
+            }
+            .flip-leaf.backward {
+                animation: mobileSlideBackward 0.45s ease-in-out forwards;
+            }
         }
 
-        /* Markdown Elements Typography */
+        @keyframes mobileSlideForward {
+            0% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(-100%); opacity: 0; }
+        }
+
+        @keyframes mobileSlideBackward {
+            0% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* Markdown Typography */
         .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4 { 
             color: var(--text-main); font-weight: 700; margin-top: 0.35em; margin-bottom: 0.4em; line-height: 1.25; 
         }
@@ -354,7 +415,7 @@
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
                 if (!AudioCtx) return;
                 const ctx = new AudioCtx();
-                const bufferSize = ctx.sampleRate * 0.11; // 110ms soft rustle
+                const bufferSize = ctx.sampleRate * 0.11;
                 const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
                 const data = buffer.getChannelData(0);
                 for (let i = 0; i < bufferSize; i++) {
@@ -368,7 +429,7 @@
                 filter.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + 0.1);
 
                 const gain = ctx.createGain();
-                gain.gain.setValueAtTime(0.25, ctx.currentTime);
+                gain.gain.setValueAtTime(0.22, ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.005, ctx.currentTime + 0.1);
 
                 noise.connect(filter);
@@ -452,7 +513,6 @@
         }
 
         // --- GRANULAR GAP-FREE PAGINATION ALGORITHM ---
-        // Accurately packs items, splits lists & paragraphs to eliminate blank voids under headings
         function calculatePagesGapFree(fullHtml, targetWidth, targetHeight, fontSize) {
             if (!fullHtml || targetWidth <= 0 || targetHeight <= 0) return [''];
 
@@ -487,12 +547,11 @@
             };
 
             const addNode = (node) => {
-                // Check if node fits as a whole
                 const clone = node.cloneNode(true);
                 currentDiv.appendChild(clone);
 
                 if (currentDiv.offsetHeight <= targetHeight) {
-                    return; // Fits completely
+                    return;
                 }
 
                 currentDiv.removeChild(clone);
@@ -500,7 +559,7 @@
                 if (node.nodeType === Node.ELEMENT_NODE) {
                     const tag = node.tagName.toLowerCase();
 
-                    // 1. Lists: ul / ol (Split by items so Objectives never leaves an empty gap)
+                    // 1. Lists: ul / ol
                     if (tag === 'ul' || tag === 'ol') {
                         const items = Array.from(node.children);
                         let curList = document.createElement(tag);
@@ -517,7 +576,6 @@
                                 continue;
                             }
 
-                            // Overflows: move remaining items to next page
                             curList.removeChild(liClone);
 
                             if (curList.children.length > 0) {
@@ -527,7 +585,6 @@
                                 currentDiv.appendChild(curList);
                                 curList.appendChild(items[i].cloneNode(true));
                             } else {
-                                // Even the single item didn't fit, start fresh page
                                 currentDiv.removeChild(curList);
                                 if (currentDiv.childNodes.length > 0) pushPage();
                                 curList = document.createElement(tag);
@@ -539,9 +596,8 @@
                         return;
                     }
 
-                    // 2. Paragraphs: split word by word to fill available vertical space to the brim
+                    // 2. Paragraphs
                     if (tag === 'p') {
-                        // Split by tokens preserving KaTeX and HTML tags intact
                         const tokens = node.innerHTML.match(/(<[^>]+>|[^<>\s]+|\s+)/g) || [node.innerHTML];
                         let low = 0, high = tokens.length, bestFit = 0;
 
@@ -570,7 +626,7 @@
                             if (remainder.trim()) {
                                 const p2 = document.createElement('p');
                                 p2.innerHTML = remainder;
-                                addNode(p2); // add remainder
+                                addNode(p2);
                             }
                         } else {
                             if (currentDiv.childNodes.length > 0) pushPage();
@@ -579,7 +635,7 @@
                         return;
                     }
 
-                    // 3. Headings: Avoid orphan heading at the very bottom
+                    // 3. Headings: Avoid orphan heading at the bottom
                     if (/^h[1-6]$/.test(tag)) {
                         const remainingSpace = targetHeight - currentDiv.offsetHeight;
                         if (remainingSpace < 75 && currentDiv.childNodes.length > 0) {
@@ -589,7 +645,7 @@
                         return;
                     }
 
-                    // 4. Blockquotes: split by internal paragraphs
+                    // 4. Blockquotes
                     if (tag === 'blockquote') {
                         const children = Array.from(node.children);
                         if (children.length > 0) {
@@ -617,7 +673,6 @@
                     }
                 }
 
-                // Default fallback for tables, code blocks, images
                 if (currentDiv.childNodes.length > 0) pushPage();
                 currentDiv.appendChild(node.cloneNode(true));
             };
@@ -634,48 +689,38 @@
             return pages.length > 0 ? pages : [''];
         }
 
-        // --- REALISTIC TOUCH-DRAG FLIPBOOK READER ---
+        // --- ENHANCED 3D FLIPBOOK READER COMPONENT ---
         const FlipBookReader = ({ book, chapter, rawContent, fontSize, onPrevChapter, onNextChapter, hasPrevChapter, hasNextChapter }) => {
-            const spreadRef = useRef(null);
-            const pageBodyRef = useRef(null);
+            const stageRef = useRef(null);
             const [pages, setPages] = useState(['']);
             const [currentSpread, setCurrentSpread] = useState(0); 
             const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
+            
+            // 3D Flip State
+            const [flipAnim, setFlipAnim] = useState(null); // { dir: 'forward' | 'backward', fromSpread: number }
 
-            // Drag State for Physics-Based Finger Tracking
-            const [dragState, setDragState] = useState({
-                isDragging: false,
-                direction: null, // 'next' | 'prev'
-                progress: 0,     // 0 to 1
-                startX: 0,
-                currentAngle: 0,
-                isAnimating: false
-            });
+            const touchRef = useRef({ startX: 0, startY: 0, startTime: 0 });
 
             // Pre-process markdown & KaTeX
             const fullHtml = useMemo(() => renderMarkdownWithMath(rawContent || ''), [rawContent]);
 
             // Measure accurate target box dimensions
             const performPagination = useCallback(() => {
-                if (!spreadRef.current) return;
+                if (!stageRef.current) return;
                 const mobile = window.innerWidth < 900;
                 setIsMobile(mobile);
 
-                let usableW, usableH;
-                if (pageBodyRef.current) {
-                    const rect = pageBodyRef.current.getBoundingClientRect();
-                    usableW = Math.floor(rect.width);
-                    usableH = Math.floor(rect.height);
-                } else {
-                    const spreadRect = spreadRef.current.getBoundingClientRect();
-                    usableW = Math.floor(mobile ? spreadRect.width - 40 : (spreadRect.width / 2) - 80);
-                    usableH = Math.floor(spreadRect.height - 95);
-                }
+                const stageRect = stageRef.current.getBoundingClientRect();
+                const paddingH = mobile ? 36 : 80;
+                const paddingV = mobile ? 80 : 96;
+                const usableW = Math.floor(mobile ? stageRect.width - paddingH : (stageRect.width / 2) - paddingH);
+                const usableH = Math.floor(stageRect.height - paddingV);
 
                 if (usableW > 100 && usableH > 100) {
                     const paginated = calculatePagesGapFree(fullHtml, usableW, usableH, fontSize);
                     setPages(paginated);
                     setCurrentSpread(0);
+                    setFlipAnim(null);
                 }
             }, [fullHtml, fontSize]);
 
@@ -691,12 +736,18 @@
                 return Math.ceil(pages.length / 2);
             }, [pages.length, isMobile]);
 
-            // Turn Page with Sound and Optional Animation
-            const completeTurn = useCallback((dir) => {
+            // Robust 3D Flip Trigger
+            const triggerFlip = useCallback((dir) => {
+                if (flipAnim) return; // Prevent double trigger during animation
+
                 if (dir === 'next') {
                     if (currentSpread < totalSpreads - 1) {
                         playPageTurnSound();
-                        setCurrentSpread(s => s + 1);
+                        setFlipAnim({ dir: 'forward', fromSpread: currentSpread });
+                        setTimeout(() => {
+                            setCurrentSpread(s => s + 1);
+                            setFlipAnim(null);
+                        }, 510);
                     } else if (hasNextChapter) {
                         playPageTurnSound();
                         onNextChapter();
@@ -704,87 +755,45 @@
                 } else if (dir === 'prev') {
                     if (currentSpread > 0) {
                         playPageTurnSound();
-                        setCurrentSpread(s => s - 1);
+                        setFlipAnim({ dir: 'backward', fromSpread: currentSpread });
+                        setTimeout(() => {
+                            setCurrentSpread(s => s - 1);
+                            setFlipAnim(null);
+                        }, 510);
                     } else if (hasPrevChapter) {
                         playPageTurnSound();
                         onPrevChapter();
                     }
                 }
-            }, [currentSpread, totalSpreads, hasNextChapter, hasPrevChapter, onNextChapter, onPrevChapter]);
+            }, [currentSpread, totalSpreads, flipAnim, hasNextChapter, hasPrevChapter, onNextChapter, onPrevChapter]);
 
-            // Pointer/Touch Event Handlers for Realistic Touch Dragging
-            const handlePointerDown = (e) => {
-                if (dragState.isAnimating) return;
-                const rect = spreadRef.current.getBoundingClientRect();
-                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-                const relX = clientX - rect.left;
-                const isRightSide = relX > rect.width * 0.45;
-
-                const dir = isRightSide ? 'next' : 'prev';
-                if (dir === 'next' && currentSpread >= totalSpreads - 1 && !hasNextChapter) return;
-                if (dir === 'prev' && currentSpread === 0 && !hasPrevChapter) return;
-
-                setDragState({
-                    isDragging: true,
-                    direction: dir,
-                    progress: 0,
-                    startX: clientX,
-                    currentAngle: 0,
-                    isAnimating: false,
-                    startTime: Date.now()
-                });
+            // Touch / Mouse Gesture Handlers
+            const handleStart = (clientX, clientY) => {
+                touchRef.current = { startX: clientX, startY: clientY, startTime: Date.now() };
             };
 
-            const handlePointerMove = (e) => {
-                if (!dragState.isDragging || dragState.isAnimating) return;
-                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-                const dx = clientX - dragState.startX;
-                const spreadW = spreadRef.current.getBoundingClientRect().width;
-                const pageW = isMobile ? spreadW : spreadW / 2;
+            const handleEnd = (clientX, clientY) => {
+                const dx = clientX - touchRef.current.startX;
+                const dy = clientY - touchRef.current.startY;
+                const dist = Math.abs(dx);
 
-                if (dragState.direction === 'next') {
-                    const dist = Math.max(0, -dx);
-                    const prog = Math.min(1, dist / pageW);
-                    const angle = - (prog * 180);
-                    setDragState(prev => ({ ...prev, progress: prog, currentAngle: angle }));
-                } else {
-                    const dist = Math.max(0, dx);
-                    const prog = Math.min(1, dist / pageW);
-                    const angle = (prog * 180);
-                    setDragState(prev => ({ ...prev, progress: prog, currentAngle: angle }));
+                // 1. Swipe detection
+                if (dist > 35 && dist > Math.abs(dy)) {
+                    if (dx < 0) triggerFlip('next');
+                    else triggerFlip('prev');
+                    return;
                 }
-            };
 
-            const handlePointerUp = (e) => {
-                if (!dragState.isDragging || dragState.isAnimating) return;
-                const clientX = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : e.clientX;
-                const dx = clientX - dragState.startX;
-                const elapsed = Date.now() - dragState.startTime;
-                const isQuickSwipe = elapsed < 250 && Math.abs(dx) > 25;
-                const passedThreshold = dragState.progress > 0.2 || isQuickSwipe;
-
-                // Animate snap to end or snap back
-                setDragState(prev => ({ ...prev, isAnimating: true }));
-
-                if (passedThreshold) {
-                    // Complete turn
-                    const targetAngle = dragState.direction === 'next' ? -180 : 180;
-                    setDragState(prev => ({ ...prev, currentAngle: targetAngle }));
-
-                    setTimeout(() => {
-                        completeTurn(dragState.direction);
-                        setDragState({
-                            isDragging: false, direction: null, progress: 0, startX: 0, currentAngle: 0, isAnimating: false
-                        });
-                    }, 240);
-                } else {
-                    // Snap back
-                    setDragState(prev => ({ ...prev, currentAngle: 0 }));
-                    setTimeout(() => {
-                        setDragState({
-                            isDragging: false, direction: null, progress: 0, startX: 0, currentAngle: 0, isAnimating: false
-                        });
-                    }, 220);
+                // 2. Clean Tap / Click detection
+                if (dist < 15 && Math.abs(dy) < 15) {
+                    if (!stageRef.current) return;
+                    const rect = stageRef.current.getBoundingClientRect();
+                    const relX = clientX - rect.left;
+                    if (relX > rect.width * 0.5) {
+                        triggerFlip('next');
+                    } else {
+                        triggerFlip('prev');
+                    }
                 }
             };
 
@@ -792,68 +801,80 @@
             useEffect(() => {
                 const handleKeyDown = (e) => {
                     if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
-                        completeTurn('next');
+                        triggerFlip('next');
                     } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
-                        completeTurn('prev');
+                        triggerFlip('prev');
                     }
                 };
                 window.addEventListener('keydown', handleKeyDown);
                 return () => window.removeEventListener('keydown', handleKeyDown);
-            }, [completeTurn]);
+            }, [triggerFlip]);
 
-            // Page indices
-            const leftPageIdx = isMobile ? currentSpread : currentSpread * 2;
-            const rightPageIdx = leftPageIdx + 1;
+            // Page indices calculation
+            const currentIdx = isMobile ? currentSpread : currentSpread * 2;
+            
+            // Dynamic display content depending on animation state
+            let leftDisplayHtml = '';
+            let rightDisplayHtml = '';
+            let leafFrontHtml = '';
+            let leafBackHtml = '';
 
-            const leftHtml = pages[leftPageIdx] || '';
-            const rightHtml = !isMobile ? (pages[rightPageIdx] || '') : '';
-
-            // Leaf faces for interactive dragging
-            const leafFrontHtml = dragState.direction === 'next' ? rightHtml : leftHtml;
-            const leafBackHtml = dragState.direction === 'next' 
-                ? (pages[(currentSpread + 1) * 2] || '') 
-                : (pages[(currentSpread - 1) * 2 + 1] || '');
-
-            const shadowIntensity = Math.sin(dragState.progress * Math.PI) * 0.4;
+            if (flipAnim) {
+                if (flipAnim.dir === 'forward') {
+                    // Flipping from right to left
+                    const fromBase = isMobile ? flipAnim.fromSpread : flipAnim.fromSpread * 2;
+                    leftDisplayHtml = pages[fromBase] || '';
+                    rightDisplayHtml = !isMobile ? (pages[fromBase + 3] || '') : '';
+                    leafFrontHtml = pages[fromBase + 1] || '';
+                    leafBackHtml = pages[fromBase + 2] || '';
+                } else {
+                    // Flipping from left to right
+                    const fromBase = isMobile ? flipAnim.fromSpread : flipAnim.fromSpread * 2;
+                    leftDisplayHtml = pages[fromBase - 2] || '';
+                    rightDisplayHtml = !isMobile ? (pages[fromBase + 1] || '') : '';
+                    leafFrontHtml = pages[fromBase] || '';
+                    leafBackHtml = pages[fromBase - 1] || '';
+                }
+            } else {
+                leftDisplayHtml = pages[currentIdx] || '';
+                rightDisplayHtml = !isMobile ? (pages[currentIdx + 1] || '') : '';
+            }
 
             return (
                 <div className="reader-area">
-                    <div className="flipbook-stage" ref={spreadRef}
-                         onPointerDown={handlePointerDown}
-                         onPointerMove={handlePointerMove}
-                         onPointerUp={handlePointerUp}
-                         onTouchStart={handlePointerDown}
-                         onTouchMove={handlePointerMove}
-                         onTouchEnd={handlePointerUp}>
+                    <div className="flipbook-stage" ref={stageRef}
+                         onMouseDown={(e) => handleStart(e.clientX, e.clientY)}
+                         onMouseUp={(e) => handleEnd(e.clientX, e.clientY)}
+                         onTouchStart={(e) => {
+                             if (e.touches && e.touches[0]) handleStart(e.touches[0].clientX, e.touches[0].clientY);
+                         }}
+                         onTouchEnd={(e) => {
+                             if (e.changedTouches && e.changedTouches[0]) handleEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                         }}>
                          
                         <div className="book-spread">
                             
                             {/* Left Page */}
-                            <div className="book-half left" title="Drag or Click to go Previous">
+                            <div className="book-half left">
                                 <div className="page-header">{book.title}</div>
-                                <div className="page-body markdown-body" ref={pageBodyRef} style={{ fontSize: `${fontSize}px` }} dangerouslySetInnerHTML={{ __html: leftHtml }} />
-                                <div className="page-footer">Page {leftPageIdx + 1} of {pages.length}</div>
+                                <div className="page-body markdown-body" style={{ fontSize: `${fontSize}px` }} dangerouslySetInnerHTML={{ __html: leftDisplayHtml }} />
+                                <div className="page-footer">Page {currentIdx + 1} of {pages.length}</div>
                                 <div className="corner-curl"></div>
                             </div>
 
                             {/* Right Page (Desktop) */}
                             {!isMobile && (
-                                <div className="book-half right" title="Drag or Click to go Next">
+                                <div className="book-half right">
                                     <div className="page-header">{chapter.title}</div>
-                                    <div className="page-body markdown-body" style={{ fontSize: `${fontSize}px` }} dangerouslySetInnerHTML={{ __html: rightHtml }} />
-                                    <div className="page-footer">{rightHtml ? `Page ${rightPageIdx + 1} of ${pages.length}` : ''}</div>
+                                    <div className="page-body markdown-body" style={{ fontSize: `${fontSize}px` }} dangerouslySetInnerHTML={{ __html: rightDisplayHtml }} />
+                                    <div className="page-footer">{rightDisplayHtml ? `Page ${currentIdx + 2} of ${pages.length}` : ''}</div>
                                     <div className="corner-curl"></div>
                                 </div>
                             )}
 
-                            {/* Realistic Physics-Based 3D Drag Leaf */}
-                            {dragState.isDragging && (
-                                <div className={`interactive-leaf ${dragState.direction === 'next' ? 'leaf-right' : 'leaf-left'}`}
-                                     style={{
-                                         transform: `rotateY(${dragState.currentAngle}deg)`,
-                                         transition: dragState.isAnimating ? 'transform 0.24s cubic-bezier(0.25, 1, 0.5, 1)' : 'none',
-                                         boxShadow: `${dragState.direction === 'next' ? -dragState.progress * 25 : dragState.progress * 25}px 0 35px rgba(0,0,0,${shadowIntensity})`
-                                     }}>
+                            {/* 3D Animated Flip Leaf */}
+                            {flipAnim && (
+                                <div className={`flip-leaf ${flipAnim.dir}`}>
                                     <div className="leaf-side front markdown-body" style={{ fontSize: `${fontSize}px` }} dangerouslySetInnerHTML={{ __html: leafFrontHtml }} />
                                     <div className="leaf-side back markdown-body" style={{ fontSize: `${fontSize}px` }} dangerouslySetInnerHTML={{ __html: leafBackHtml }} />
                                 </div>
@@ -1039,13 +1060,6 @@
                 try { await navigator.clipboard.writeText(url); showToast('Link copied to clipboard!'); } catch (err) { showToast('Failed to copy link!'); }
             };
 
-            const navigateChapter = (direction) => {
-                if (!activeBook || !activeChapter) return;
-                const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
-                if (direction === 'next' && idx < activeBook.chapters.length - 1) loadChapter(activeBook, activeBook.chapters[idx + 1]);
-                else if (direction === 'prev' && idx > 0) loadChapter(activeBook, activeBook.chapters[idx - 1]);
-            };
-
             // Search Modal
             const SearchModal = () => (
                 <div className="modal-overlay" onClick={(e) => { if (e.target.className === 'modal-overlay') closeModal(); }}>
@@ -1171,8 +1185,14 @@
                             chapter={activeChapter}
                             rawContent={mdContent}
                             fontSize={fontSize}
-                            onPrevChapter={() => navigateChapter('prev')}
-                            onNextChapter={() => navigateChapter('next')}
+                            onPrevChapter={() => {
+                                const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
+                                if (idx > 0) loadChapter(activeBook, activeBook.chapters[idx - 1]);
+                            }}
+                            onNextChapter={() => {
+                                const idx = activeBook.chapters.findIndex(c => c.id === activeChapter.id);
+                                if (idx < activeBook.chapters.length - 1) loadChapter(activeBook, activeBook.chapters[idx + 1]);
+                            }}
                             hasPrevChapter={activeBook.chapters.findIndex(c => c.id === activeChapter.id) > 0}
                             hasNextChapter={activeBook.chapters.findIndex(c => c.id === activeChapter.id) < activeBook.chapters.length - 1}
                         />

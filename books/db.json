@@ -12,6 +12,18 @@
     ]
   },
   {
+    "id": "tahm",
+    "title": " Tourism and Hospitality Management",
+    "folder": "books/tahm",
+    "chapters": [
+      { "id": "c1", "title": " Tourism overview", "file": "1.md" },
+      { "id": "c2", "title": "How Tourism Is Organized", "file": "2.md" },
+      { "id": "c3", "title": " understanding travel behavior", "file": "3.md" },
+      { "id": "c4", "title": "Tourism Supply demand policy planning and development", "file": "4.md" },
+      { "id": "c5", "title": " tourism marketing and future", "file": "5.md" }
+    ]
+  },
+  {
     "id": "esbm",
     "title": " Entrepreneurship and small business management",
     "folder": "books/entrepreneurship_and_small_business_management",
